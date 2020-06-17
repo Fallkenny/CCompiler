@@ -1,0 +1,72 @@
+----------------------------
+|                          |
+|          TOKENS          |
+|                          |
+----------------------------
+TK_int 1
+TK_float 2
+TK_char 3
+TK_struct 4
+TK_if 5
+TK_else 6
+TK_id 7
+TK_Abre_Colch 8
+TK_Fecha_Colch 9
+TK_Abre_Chaves 10
+TK_Fecha_Chaves 11
+TK_Fim_Arquivo 12
+TK_Atrib 13
+TK_Const_Int 14
+TK_Mais 15
+TK_Menos 16
+TK_Mult 17
+TK_Abre_Par 18
+TK_Fecha_Par 19
+TK_Virgula 20
+TK_PontoEVirgula 21
+TK_Maior 22
+TK_Menor 23
+TK_Menor_Igual 24
+TK_Maior_Igual 25
+TK_Igual 26
+TK_Diferente 27
+TK_while 28
+
+
+
+
+Program -> translation_unit
+
+main_func-> 'int main' compound_statement
+compound_statement -> '{' '}' | '{'  block_item_list '}'
+block_item_list -> block_item | block_item_list block_item
+block_item -> declaration | statement
+
+declaration -> declaration_specifiers ';'| declaration_specifiers init_declarator_list ';'
+declaration_specifiers -> type_specifier declaration_specifiers	| type_specifier
+
+type_specifier
+	: VOID
+	| CHAR
+	| SHORT
+	| INT
+	| LONG
+	| FLOAT
+	| DOUBLE
+	| SIGNED
+	| UNSIGNED
+	| BOOL
+	| COMPLEX
+	| IMAGINARY	  	/* non-mandated extension */
+	| atomic_type_specifier
+	| struct_or_union_specifier
+	| enum_specifier
+	| TYPEDEF_NAME		/* after it has been defined as such */
+	;
+
+init_declarator_list -> init_declarator	| init_declarator_list ',' init_declarator
+
+init_declarator -> declarator '=' initializer	| declarator
+declarator -> direct_declarator
+
+direct_declarator -> IDENTIFIER
