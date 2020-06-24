@@ -206,8 +206,8 @@ init_declarator_list
 	;
 
 init_declarator
-	: declarator '=' initializer
-	| declarator
+	: IDENTIFIER '=' initializer
+	| IDENTIFIER
 	;
 
 ------------------
@@ -274,8 +274,8 @@ struct_declarator_list
 
 struct_declarator
 	: ':' constant_expression
-	| declarator ':' constant_expression
-	| declarator
+	| IDENTIFIER ':' constant_expression
+	| IDENTIFIER
 	;
 
 enum_specifier
@@ -318,25 +318,25 @@ atomic_type_specifier
 	;
 
 declarator
-	: pointer direct_declarator
-	| direct_declarator
+	: pointer IDENTIFIER
+	| IDENTIFIER
 	;
 
-direct_declarator
+IDENTIFIER
 	: IDENTIFIER
-	| '(' declarator ')'
-	| direct_declarator '[' ']'
-	| direct_declarator '[' '*' ']'
-	| direct_declarator '[' STATIC ------------------_list assignment_expression ']'
-	| direct_declarator '[' STATIC assignment_expression ']'
-	| direct_declarator '[' ------------------_list '*' ']'
-	| direct_declarator '[' ------------------_list STATIC assignment_expression ']'
-	| direct_declarator '[' ------------------_list assignment_expression ']'
-	| direct_declarator '[' ------------------_list ']'
-	| direct_declarator '[' assignment_expression ']'
-	| direct_declarator '(' parameter_type_list ')'
-	| direct_declarator '(' ')'
-	| direct_declarator '(' identifier_list ')'
+	| '(' IDENTIFIER ')'
+	| IDENTIFIER '[' ']'
+	| IDENTIFIER '[' '*' ']'
+	| IDENTIFIER '[' STATIC ------------------_list assignment_expression ']'
+	| IDENTIFIER '[' STATIC assignment_expression ']'
+	| IDENTIFIER '[' ------------------_list '*' ']'
+	| IDENTIFIER '[' ------------------_list STATIC assignment_expression ']'
+	| IDENTIFIER '[' ------------------_list assignment_expression ']'
+	| IDENTIFIER '[' ------------------_list ']'
+	| IDENTIFIER '[' assignment_expression ']'
+	| IDENTIFIER '(' parameter_type_list ')'
+	| IDENTIFIER '(' ')'
+	| IDENTIFIER '(' identifier_list ')'
 	;
 
 pointer
@@ -363,7 +363,7 @@ parameter_list
 	;
 
 parameter_declaration
-	: declaration_specifiers declarator
+	: declaration_specifiers IDENTIFIER
 	| declaration_specifiers abstract_declarator
 	| declaration_specifiers
 	;
@@ -508,8 +508,8 @@ external_declaration
 	;
 
 function_definition
-	: declaration_specifiers declarator declaration_list compound_statement
-	| declaration_specifiers declarator compound_statement
+	: declaration_specifiers IDENTIFIER declaration_list compound_statement
+	| declaration_specifiers IDENTIFIER compound_statement
 	;
 
 declaration_list

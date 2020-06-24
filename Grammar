@@ -66,13 +66,21 @@ type_specifier
 
 init_declarator_list -> init_declarator	| init_declarator_list ',' init_declarator
 
-init_declarator -> declarator '=' initializer	| declarator
+init_declarator -> IDENTIFIER '=' initializer	| declarator
 declarator -> direct_declarator
 
 direct_declarator -> IDENTIFIER
 
-initializer
-	: '{' initializer_list '}'
-	| '{' initializer_list ',' '}'
-	| assignment_expression
-	;
+initializer -> '{' initializer_list '}'	| '{' initializer_list ',' '}' | assignment_expression
+
+initializer_list -> designation initializer	| initializer | initializer_list ',' designation initializer 
+					| initializer_list ',' initializer
+
+assignment_expression -> conditional_expression	| unary_expression assignment_operator assignment_expression
+
+designation -> designator_list '='
+
+designator_list -> designator | designator_list designator
+designator -> '[' constant_expression ']' | '.' IDENTIFIER
+
+conditional_expression -> logical_or_expression	| logical_or_expression '?' expression ':' conditional_expression
