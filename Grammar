@@ -12,10 +12,7 @@ type_specifier -> INT | FLOAT
 
 init_declarator_list -> init_declarator	| init_declarator_list ',' init_declarator
 
-init_declarator -> IDENTIFIER '=' initializer	| declarator
-declarator -> direct_declarator
-
-direct_declarator -> IDENTIFIER
+init_declarator -> IDENTIFIER '=' initializer	| IDENTIFIER
 
 initializer -> '{' initializer_list '}'	| '{' initializer_list ',' '}' | assignment_expression
 

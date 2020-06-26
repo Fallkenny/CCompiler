@@ -503,3 +503,5 @@ declaration_list
 	: declaration
 	| declaration_list declaration
 	;
+
+%%
