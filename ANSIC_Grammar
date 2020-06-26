@@ -1,24 +1,3 @@
-http://www.quut.com/c/ANSI-C-grammar-y.html
-%token	IDENTIFIER I_CONSTANT F_CONSTANT STRING_LITERAL FUNC_NAME SIZEOF
-%token	PTR_OP INC_OP DEC_OP LEFT_OP RIGHT_OP LE_OP GE_OP EQ_OP NE_OP
-%token	AND_OP OR_OP MUL_ASSIGN DIV_ASSIGN MOD_ASSIGN ADD_ASSIGN
-%token	SUB_ASSIGN LEFT_ASSIGN RIGHT_ASSIGN AND_ASSIGN
-%token	XOR_ASSIGN OR_ASSIGN
-%token	TYPEDEF_NAME ENUMERATION_CONSTANT
-
-%token	TYPEDEF EXTERN STATIC AUTO REGISTER INLINE
-%token	CONST RESTRICT VOLATILE
-%token	BOOL CHAR SHORT INT LONG SIGNED UNSIGNED FLOAT DOUBLE VOID
-%token	COMPLEX IMAGINARY 
-%token	STRUCT UNION ENUM ELLIPSIS
-
-%token	CASE DEFAULT IF ELSE SWITCH WHILE DO FOR GOTO CONTINUE BREAK RETURN
-
-%token	ALIGNAS ALIGNOF ATOMIC GENERIC NORETURN STATIC_ASSERT THREAD_LOCAL
-
-%start translation_unit
-%%
-
 primary_expression
 	: IDENTIFIER
 	| constant
@@ -196,8 +175,16 @@ declaration
 	;
 
 declaration_specifiers
+	: storage_class_specifier declaration_specifiers
+	| storage_class_specifier
 	| type_specifier declaration_specifiers
 	| type_specifier
+	| type_qualifier declaration_specifiers
+	| type_qualifier
+	| function_specifier declaration_specifiers
+	| function_specifier
+	| alignment_specifier declaration_specifiers
+	| alignment_specifier
 	;
 
 init_declarator_list
@@ -206,11 +193,11 @@ init_declarator_list
 	;
 
 init_declarator
-	: IDENTIFIER '=' initializer
-	| IDENTIFIER
+	: declarator '=' initializer
+	| declarator
 	;
 
-------------------
+storage_class_specifier
 	: TYPEDEF	/* identifiers must be flagged as TYPEDEF_NAME */
 	| EXTERN
 	| STATIC
@@ -263,8 +250,8 @@ struct_declaration
 specifier_qualifier_list
 	: type_specifier specifier_qualifier_list
 	| type_specifier
-	| ------------------ specifier_qualifier_list
-	| ------------------
+	| type_qualifier specifier_qualifier_list
+	| type_qualifier
 	;
 
 struct_declarator_list
@@ -274,8 +261,8 @@ struct_declarator_list
 
 struct_declarator
 	: ':' constant_expression
-	| IDENTIFIER ':' constant_expression
-	| IDENTIFIER
+	| declarator ':' constant_expression
+	| declarator
 	;
 
 enum_specifier
@@ -300,55 +287,55 @@ atomic_type_specifier
 	: ATOMIC '(' type_name ')'
 	;
 
-------------------
+type_qualifier
 	: CONST
 	| RESTRICT
 	| VOLATILE
 	| ATOMIC
 	;
 
-------------------
+function_specifier
 	: INLINE
 	| NORETURN
 	;
 
-------------------
+alignment_specifier
 	: ALIGNAS '(' type_name ')'
 	| ALIGNAS '(' constant_expression ')'
 	;
 
 declarator
-	: pointer IDENTIFIER
-	| IDENTIFIER
+	: pointer direct_declarator
+	| direct_declarator
 	;
 
-IDENTIFIER
+direct_declarator
 	: IDENTIFIER
-	| '(' IDENTIFIER ')'
-	| IDENTIFIER '[' ']'
-	| IDENTIFIER '[' '*' ']'
-	| IDENTIFIER '[' STATIC ------------------_list assignment_expression ']'
-	| IDENTIFIER '[' STATIC assignment_expression ']'
-	| IDENTIFIER '[' ------------------_list '*' ']'
-	| IDENTIFIER '[' ------------------_list STATIC assignment_expression ']'
-	| IDENTIFIER '[' ------------------_list assignment_expression ']'
-	| IDENTIFIER '[' ------------------_list ']'
-	| IDENTIFIER '[' assignment_expression ']'
-	| IDENTIFIER '(' parameter_type_list ')'
-	| IDENTIFIER '(' ')'
-	| IDENTIFIER '(' identifier_list ')'
+	| '(' declarator ')'
+	| direct_declarator '[' ']'
+	| direct_declarator '[' '*' ']'
+	| direct_declarator '[' STATIC type_qualifier_list assignment_expression ']'
+	| direct_declarator '[' STATIC assignment_expression ']'
+	| direct_declarator '[' type_qualifier_list '*' ']'
+	| direct_declarator '[' type_qualifier_list STATIC assignment_expression ']'
+	| direct_declarator '[' type_qualifier_list assignment_expression ']'
+	| direct_declarator '[' type_qualifier_list ']'
+	| direct_declarator '[' assignment_expression ']'
+	| direct_declarator '(' parameter_type_list ')'
+	| direct_declarator '(' ')'
+	| direct_declarator '(' identifier_list ')'
 	;
 
 pointer
-	: '*' ------------------_list pointer
-	| '*' ------------------_list
+	: '*' type_qualifier_list pointer
+	| '*' type_qualifier_list
 	| '*' pointer
 	| '*'
 	;
 
-------------------_list
-	: ------------------
-	| ------------------_list ------------------
+type_qualifier_list
+	: type_qualifier
+	| type_qualifier_list type_qualifier
 	;
 
 
@@ -363,7 +350,7 @@ parameter_list
 	;
 
 parameter_declaration
-	: declaration_specifiers IDENTIFIER
+	: declaration_specifiers declarator
 	| declaration_specifiers abstract_declarator
 	| declaration_specifiers
 	;
@@ -388,19 +375,19 @@ direct_abstract_declarator
 	: '(' abstract_declarator ')'
 	| '[' ']'
 	| '[' '*' ']'
-	| '[' STATIC ------------------_list assignment_expression ']'
+	| '[' STATIC type_qualifier_list assignment_expression ']'
 	| '[' STATIC assignment_expression ']'
-	| '[' ------------------_list STATIC assignment_expression ']'
-	| '[' ------------------_list assignment_expression ']'
-	| '[' ------------------_list ']'
+	| '[' type_qualifier_list STATIC assignment_expression ']'
+	| '[' type_qualifier_list assignment_expression ']'
+	| '[' type_qualifier_list ']'
 	| '[' assignment_expression ']'
 	| direct_abstract_declarator '[' ']'
 	| direct_abstract_declarator '[' '*' ']'
-	| direct_abstract_declarator '[' STATIC ------------------_list assignment_expression ']'
+	| direct_abstract_declarator '[' STATIC type_qualifier_list assignment_expression ']'
 	| direct_abstract_declarator '[' STATIC assignment_expression ']'
-	| direct_abstract_declarator '[' ------------------_list assignment_expression ']'
-	| direct_abstract_declarator '[' ------------------_list STATIC assignment_expression ']'
-	| direct_abstract_declarator '[' ------------------_list ']'
+	| direct_abstract_declarator '[' type_qualifier_list assignment_expression ']'
+	| direct_abstract_declarator '[' type_qualifier_list STATIC assignment_expression ']'
+	| direct_abstract_declarator '[' type_qualifier_list ']'
 	| direct_abstract_declarator '[' assignment_expression ']'
 	| '(' ')'
 	| '(' parameter_type_list ')'
@@ -508,13 +495,11 @@ external_declaration
 	;
 
 function_definition
-	: declaration_specifiers IDENTIFIER declaration_list compound_statement
-	| declaration_specifiers IDENTIFIER compound_statement
+	: declaration_specifiers declarator declaration_list compound_statement
+	| declaration_specifiers declarator compound_statement
 	;
 
 declaration_list
 	: declaration
 	| declaration_list declaration
 	;
-
-%%
