@@ -7,25 +7,25 @@ Declaration  SETA Declaration_specifiers SEMICOLON  |  Declaration_specifiers In
 Declaration_specifiers  SETA Type_specifier Declaration_specifiers  |  Type_specifier
 Type_specifier  SETA INT  |  FLOAT
 Init_declarator_list  SETA Init_declarator  |  Init_declarator_list COMMA Init_declarator
-Init_declarator  SETA IDENTIFIER ASSIGNENT Initializer  |  IDENTIFIER
+Init_declarator  SETA IDENTIFIER tkASSIGNENT Initializer  |  IDENTIFIER
 Initializer  SETA OPEN_BRACE Initializer_list CLOSE_BRACE  |  OPEN_BRACE Initializer_list COMMA CLOSE_BRACE  |  Assignment_expression
 Initializer_list  SETA Designation Initializer  |  Initializer  |  Initializer_list COMMA Designation Initializer       |  Initializer_list COMMA Initializer
 Assignment_expression  SETA Conditional_expression  |  Unary_expression Assignment_operator Assignment_expression
-Designation  SETA Designator_list ASSIGNENT
+Designation  SETA Designator_list tkASSIGNENT
 Designator_list  SETA Designator  |  Designator_list Designator
 Designator  SETA OPEN_BRACKET Conditional_expression CLOSE_BRACKET  |  DOT IDENTIFIER
 Conditional_expression  SETA Logical_or_expression 
 Logical_or_expression  SETA Logical_and_expression  |  Logical_or_expression LOGICAL_OR Logical_and_expression 
 Logical_and_expression  SETA Equality_expression  |  Logical_and_expression LOGICAL_AND Equality_expression
-Equality_expression  SETA Relational_expression  |  Equality_expression EQUALS Relational_expression  |  Equality_expression NOT_EQUALS Relational_expression
+Equality_expression  SETA Relational_expression  |  Equality_expression tkEQUALS Relational_expression  |  Equality_expression NOT_EQUALS Relational_expression
 Relational_expression  SETA Additive_expression  |  Relational_expression LESS Additive_expression  |  Relational_expression GREATER Additive_expression
-Additive_expression  SETA Multiplicative_expression  |  Additive_expression PLUS Multiplicative_expression  |  Additive_expression MINUS Multiplicative_expression
-Multiplicative_expression SETA Unary_expression  |  Multiplicative_expression PRODUCT Unary_expression  |  Multiplicative_expression DIVISION Unary_expression  |  Multiplicative_expression MODULE Unary_expression
+Additive_expression  SETA Multiplicative_expression  |  Additive_expression tkPLUS Multiplicative_expression  |  Additive_expression tkMINUS Multiplicative_expression
+Multiplicative_expression SETA Unary_expression  |  Multiplicative_expression tkPRODUCT Unary_expression  |  Multiplicative_expression tkDIVISION Unary_expression  |  Multiplicative_expression tkMODULE Unary_expression
 Unary_expression  SETA Postfix_expression  |  INCREMENT Unary_expression  |  DECREMENT Unary_expression  |  Unary_operator Unary_expression; 
-Unary_operator  SETA PLUS |  MINUS |  LOGICAL_NOT
+Unary_operator  SETA tkPLUS |  tkMINUS |  LOGICAL_NOT
 Postfix_expression  SETA Primary_expression  |   Postfix_expression INCREMENT  |  Postfix_expression DECREMENT
 Primary_expression SETA IDENTIFIER  |  constant  |  OPEN_PARENTHESIS Expression CLOSE_PARENTHESIS
-Assignment_operator  SETA ASSIGNENT |  PRODUCT_ASSIGNMENT  |  DIVISION_ASSIGNMENT  |  MODULE_ASSIGNENT |  PLUS_ASSIGNENT |  MINUS_ASSIGNENT
+Assignment_operator  SETA tkASSIGNENT |  PRODUCT_ASSIGNMENT  |  DIVISION_ASSIGNMENT  |  MODULE_ASSIGNENT |  PLUS_ASSIGNENT |  MINUS_ASSIGNENT
 Statement  SETA  Compound_statement  |  Expression_statement  |  If_statement  |  Iteration_statement  |  Jump_statement
 Expression_statement  SETA SEMICOLON  |  Expression SEMICOLON
 Expression  SETA Assignment_expression  |  Expression COMMA Assignment_expression;
