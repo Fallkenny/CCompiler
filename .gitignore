@@ -1,2 +1,3 @@
 
-DotNetCCompiler/.vs/
+DotNetCCompiler/.vs/*
+DotNetCCompiler/DotNetCCompiler/bin/*
