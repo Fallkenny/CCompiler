@@ -1,3 +1,7 @@
 
-DotNetCCompiler/.vs/**/
+.vs/
+*bin/
+*obj/
+DotNetCCompiler/.vs/**/**/**/
 DotNetCCompiler/DotNetCCompiler/bin/**/
+DotNetCCompiler/DotNetCCompiler/obj/**/
