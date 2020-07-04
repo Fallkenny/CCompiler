@@ -1,14 +1,11 @@
-tkCONSTANT constant
+tkINTEGER_CONSTANT int_constant
+tkFLOATING_POINT_CONSTANT float_constant
 tkIDENTIFIER identifier
-tkMAIN main
 tkOPEN_BRACE {
 tkCLOSE_BRACE }
 tkSEMICOLON ;
 tkCOMMA ,
 tkASSIGNENT =
-tkOPEN_BRACKET [
-tkCLOSE_BRACKET ]
-tkDOT .
 tkLOGICAL_NOT !
 tkLOGICAL_OR ||
 tkLOGICAL_AND &&
@@ -16,6 +13,8 @@ tkEQUALS ==
 tkNOT_EQUALS !=
 tkLESS <
 tkGREATER >
+tkLESS_OR_EQUAL <=
+tkGREATER_OR_EQUAL >=
 tkPLUS +
 tkMINUS -
 tkPRODUCT *

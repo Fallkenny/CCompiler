@@ -4,48 +4,47 @@
 
 // DEFINE TOKENS
 
-#define TK1 1 // main
-#define tkCONSTANT 2 // constant
-#define tkIDENTIFIER 3 // identifier
-#define tkMAIN 4 // main
-#define tkOPEN_BRACE 5 // {
-#define tkCLOSE_BRACE 6 // }
-#define tkSEMICOLON 7 // ;
-#define tkCOMMA 8 // ,
-#define tkASSIGNENT 9 // =
-#define tkOPEN_BRACKET 10 // [
-#define tkCLOSE_BRACKET 11 // ]
-#define tkDOT 12 // .
-#define tkLOGICAL_NOT 13 // !
-#define tkLOGICAL_OR 14 // ||
-#define tkLOGICAL_AND 15 // &&
-#define tkEQUALS 16 // ==
-#define tkNOT_EQUALS 17 // !=
-#define tkLESS 18 // <
-#define tkGREATER 19 // >
-#define tkPLUS 20 // +
-#define tkMINUS 21 // -
-#define tkPRODUCT 22 // *
-#define tkDIVISION 23 // /
-#define tkMODULE 24 // %
-#define tkINCREMENT 25 // ++
-#define tkDECREMENT 26 // --
-#define tkOPEN_PARENTHESIS 27 // (
-#define tkCLOSE_PARENTHESIS 28 // )
-#define tkPRODUCT_ASSIGNMENT 29 // *=
-#define tkDIVISION_ASSIGNMENT 30 // /=
-#define tkMODULE_ASSIGNENT 31 // %=
-#define tkPLUS_ASSIGNENT 32 // +=
-#define tkMINUS_ASSIGNENT 33 // -=
-#define tkFOR 34 // for
-#define tkWHILE 35 // while
-#define tkIF 36 // if
-#define tkDO 37 // do
-#define tkELSE 38 // else
-#define tkINT 39 // int
-#define tkFLOAT 40 // float
-#define tkCONTINUE 41 // continue
-#define tkBREAK 42 // break
+#define tkCONSTANT 1 // constant
+#define tkIDENTIFIER 2 // identifier
+#define tkMAIN 3 // main
+#define tkOPEN_BRACE 4 // {
+#define tkCLOSE_BRACE 5 // }
+#define tkSEMICOLON 6 // ;
+#define tkCOMMA 7 // ,
+#define tkASSIGNENT 8 // =
+#define tkOPEN_BRACKET 9 // [
+#define tkCLOSE_BRACKET 10 // ]
+#define tkDOT 11 // .
+#define tkLOGICAL_NOT 12 // !
+#define tkLOGICAL_OR 13 // ||
+#define tkLOGICAL_AND 14 // &&
+#define tkEQUALS 15 // ==
+#define tkNOT_EQUALS 16 // !=
+#define tkLESS 17 // <
+#define tkGREATER 18 // >
+#define tkPLUS 19 // +
+#define tkMINUS 20 // -
+#define tkPRODUCT 21 // *
+#define tkDIVISION 22 // /
+#define tkMODULE 23 // %
+#define tkINCREMENT 24 // ++
+#define tkDECREMENT 25 // --
+#define tkOPEN_PARENTHESIS 26 // (
+#define tkCLOSE_PARENTHESIS 27 // )
+#define tkPRODUCT_ASSIGNMENT 28 // *=
+#define tkDIVISION_ASSIGNMENT 29 // /=
+#define tkMODULE_ASSIGNENT 30 // %=
+#define tkPLUS_ASSIGNENT 31 // +=
+#define tkMINUS_ASSIGNENT 32 // -=
+#define tkFOR 33 // for
+#define tkWHILE 34 // while
+#define tkIF 35 // if
+#define tkDO 36 // do
+#define tkELSE 37 // else
+#define tkINT 38 // int
+#define tkFLOAT 39 // float
+#define tkCONTINUE 40 // continue
+#define tkBREAK 41 // break
 
 // Variáveis Globais <o>
 
@@ -67,23 +66,41 @@ int Main_func();
 
 int Compound_statement();
 
+int Compound_statement'();
+
 int Block_item_list();
+
+int Block_item_list1Hash();
 
 int Block_item();
 
 int Declaration();
 
+int Declaration'();
+
 int Declaration_specifiers();
+
+int Declaration_specifiers'();
 
 int Type_specifier();
 
 int Init_declarator_list();
 
+int Init_declarator_list1Hash();
+
 int Init_declarator();
+
+int Init_declarator'();
 
 int Initializer();
 
+int Initializer'();
+
 int Initializer_list();
+
+int Initializer_list1Hash();
+
+int Initializer_list1Hash();
 
 int Assignment_expression();
 
@@ -91,11 +108,15 @@ int Designation();
 
 int Designator_list();
 
+int Designator_list1Hash();
+
 int Designator();
 
 int Conditional_expression();
 
 int Logical_or_expression();
+
+int Logical_or_expression1Hash();
 
 // <*********** INICIO DO ANALISADOR SINTÁTICO DESCENDENTE RECURSIVO COM RETROCESSO ***********>
 
@@ -141,7 +162,7 @@ int Main_func(){
 	else {return 0;}
 }
 
-//Compound_statement -> { } | { Block_item_list } 
+//Compound_statement -> { Compound_statement' 
 int Compound_statement(){
 	if(tk == tkOPEN_BRACE){// {
 		getToken();
@@ -157,18 +178,26 @@ int Compound_statement(){
 	}
 }
 
-//Block_item_list -> Block_item | Block_item_list Block_item 
+//Block_item_list -> Block_item Block_item_list1Hash 
 int Block_item_list(){
 	if (Block_item()){
-		return 1;
-	}
-	else if (Block_item_list()){
-		if (Block_item()){
+		if (Block_item_list1Hash()){
 			return 1;
 		}
 		else {return 0;}
 	}
 	else {return 0;}
+}
+
+//Block_item_list1Hash -> Block_item Block_item_list1Hash | ? 
+int Block_item_list1Hash(){
+	if (Block_item()){
+		if (Block_item_list1Hash()){
+			return 1;
+		}
+		else {return 0;}
+	}
+	else {return 1;}
 }
 
 //Block_item -> Declaration | Statement 
@@ -182,13 +211,13 @@ int Block_item(){
 	else {return 0;}
 }
 
-//Declaration -> Declaration_specifiers ; | Declaration_specifiers Init_declarator_list ; 
+//Declaration -> Declaration_specifiers Declaration' 
 int Declaration(){
 	if (Declaration_specifiers()){
 	}
 }
 
-//Declaration_specifiers -> Type_specifier Declaration_specifiers | Type_specifier 
+//Declaration_specifiers -> Type_specifier Declaration_specifiers' 
 int Declaration_specifiers(){
 	if (Type_specifier()){
 	}
@@ -207,25 +236,33 @@ int Type_specifier(){
 	else {return 0;}
 }
 
-//Init_declarator_list -> Init_declarator | Init_declarator_list , Init_declarator 
+//Init_declarator_list -> Init_declarator Init_declarator_list1Hash 
 int Init_declarator_list(){
 	if (Init_declarator()){
-		return 1;
-	}
-	else if (Init_declarator_list()){
-		if(tk == tkCOMMA){// ,
-			getToken();
-			if (Init_declarator()){
-				return 1;
-			}
-			else {return 0;}
+		if (Init_declarator_list1Hash()){
+			return 1;
 		}
 		else {return 0;}
 	}
 	else {return 0;}
 }
 
-//Init_declarator -> identifier = Initializer | identifier 
+//Init_declarator_list1Hash -> , Init_declarator Init_declarator_list1Hash | ? 
+int Init_declarator_list1Hash(){
+	if(tk == tkCOMMA){// ,
+		getToken();
+		if (Init_declarator()){
+			if (Init_declarator_list1Hash()){
+				return 1;
+			}
+			else {return 0;}
+		}
+		else {return 0;}
+	}
+	else {return 1;}
+}
+
+//Init_declarator -> identifier Init_declarator' 
 int Init_declarator(){
 	if(tk == tkIDENTIFIER){// identifier
 		getToken();
@@ -243,7 +280,7 @@ int Init_declarator(){
 	}
 }
 
-//Initializer -> { Initializer_list } | { Initializer_list , } | Assignment_expression 
+//Initializer -> { Initializer_list Initializer' | Assignment_expression 
 int Initializer(){
 	if(tk == tkOPEN_BRACE){// {
 		getToken();
@@ -255,23 +292,34 @@ int Initializer(){
 	else {return 0;}
 }
 
-//Initializer_list -> Designation Initializer | Initializer | Initializer_list , Designation Initializer | Initializer_list , Initializer 
+//Initializer_list -> Designation Initializer Initializer_list1Hash | Initializer Initializer_list1Hash 
 int Initializer_list(){
 	if (Designation()){
 		if (Initializer()){
-			return 1;
+			if (Initializer_list1Hash()){
+				return 1;
+			}
+			else {return 0;}
 		}
 		else {return 0;}
 	}
 	else if (Initializer()){
-		return 1;
+		if (Initializer_list1Hash()){
+			return 1;
+		}
+		else {return 0;}
 	}
-	else if (Initializer_list()){
-		if(tk == tkCOMMA){// ,
-			getToken();
-			marcaPosToken(); // FUNÇÃO NECESSÁRIA CASO SEJA NECESSÁRIO RESTAURAR O TOKEN ANTERIOR
-			if (Designation()){
-				if (Initializer()){
+	else {return 0;}
+}
+
+//Initializer_list1Hash -> , Initializer_list1Hash | ? 
+int Initializer_list1Hash(){
+	if(tk == tkCOMMA){// ,
+		getToken();
+		marcaPosToken(); // FUNÇÃO NECESSÁRIA CASO SEJA NECESSÁRIO RESTAURAR O TOKEN ANTERIOR
+		if (Designation()){
+			if (Initializer()){
+				if (Initializer_list1Hash()){
 					return 1;
 				}
 				else{return 0;}
@@ -279,14 +327,22 @@ int Initializer_list(){
 			else{return 0;}
 		}
 		else{return 0;}
-				if (Initializer()){
-					return 1;
+if (Initializer()){
+					if (Initializer_list1Hash()){
+						return 1;
+					}
+					else{return 0;}
 				}
-				else {
-					return 0;
+				else{return 0;}
+			}
+			else{return 0;}
+		}
+		else{return 0;}
 				}
 			}
 		}
+	}
+	else {return 1;}
 }
 
 //Assignment_expression -> Conditional_expression | Unary_expression Assignment_operator Assignment_expression 
@@ -318,18 +374,26 @@ int Designation(){
 	else {return 0;}
 }
 
-//Designator_list -> Designator | Designator_list Designator 
+//Designator_list -> Designator Designator_list1Hash 
 int Designator_list(){
 	if (Designator()){
-		return 1;
-	}
-	else if (Designator_list()){
-		if (Designator()){
+		if (Designator_list1Hash()){
 			return 1;
 		}
 		else {return 0;}
 	}
 	else {return 0;}
+}
+
+//Designator_list1Hash -> Designator Designator_list1Hash | ? 
+int Designator_list1Hash(){
+	if (Designator()){
+		if (Designator_list1Hash()){
+			return 1;
+		}
+		else {return 0;}
+	}
+	else {return 1;}
 }
 
 //Designator -> [ Conditional_expression ] | . identifier 
@@ -364,15 +428,23 @@ int Conditional_expression(){
 	else {return 0;}
 }
 
-//Logical_or_expression -> Logical_and_expression | Logical_or_expression 
+//Logical_or_expression -> Logical_and_expression Logical_or_expression1Hash 
 int Logical_or_expression(){
 	if (Logical_and_expression()){
-		return 1;
-	}
-	else if (Logical_or_expression()){
-		return 1;
+		if (Logical_or_expression1Hash()){
+			return 1;
+		}
+		else {return 0;}
 	}
 	else {return 0;}
+}
+
+//Logical_or_expression1Hash -> Logical_or_expression1Hash | ? 
+int Logical_or_expression1Hash(){
+	if (Logical_or_expression1Hash()){
+		return 1;
+	}
+	else {return 1;}
 }
 
 // <*********** FIM DO ANALISADOR SINTÁTICO DESCENDENTE RECURSIVO COM RETROCESSO ***********>
