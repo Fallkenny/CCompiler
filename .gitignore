@@ -37,3 +37,5 @@ msbuild.wrn
 *.cache
 DotNetCCompiler/DotNetCCompiler/obj/Debug/netcoreapp3.0/DotNetCCompiler.csproj.FileListAbsolute.txt
 DotNetCCompiler/.vs/DotNetCCompiler/v16/Browse.VC.opendb
+DotNetCCompiler/.vs/DotNetCCompiler/v16/Server/sqlite3/storage.ide-wal
+DotNetCCompiler/.vs/DotNetCCompiler/v16/Browse.VC.db

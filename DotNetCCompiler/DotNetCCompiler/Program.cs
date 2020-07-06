@@ -9,7 +9,7 @@ namespace DotNetCCompiler
         {
             Console.WriteLine("Hello World!");
 
-            var testFile = @"C:\GitHub\CCompiler\code\testfile2.c";
+            var testFile = @"C:\GitHub\CCompiler\code\testfile.c";
             Console.WriteLine($"Iniciando análise sintática: {testFile}");
             var fileStream = File.OpenRead(testFile);
             var lexical = new LexicalAnalyzer(fileStream);

@@ -93,6 +93,8 @@ int Init_declarator1Linha();
 
 int Assignment_expression();
 
+int Assignment_expression1Linha();
+
 int Logical_or_expression();
 
 int Logical_or_expression1Hash();
@@ -373,21 +375,26 @@ int Init_declarator1Linha(){
 	else {return 1;}
 }
 
-//Assignment_expression -> Logical_or_expression | Unary_expression Assignment_operator Assignment_expression 
+//Assignment_expression -> Logical_or_expression Assignment_expression1Linha 
 int Assignment_expression(){
-	if (Logical_or_expression()){
-		return 1;
-	}
-	else if(Unary_expression()){
-		if (Assignment_operator()){
-			if (Assignment_expression()){
-				return 1;
-			}
-			else{return 0;}
+	if(Logical_or_expression()){
+		if (Assignment_expression1Linha()){
+			return 1;
 		}
 		else{return 0;}
 	}
 	else{return 0;}
+}
+
+//Assignment_expression1Linha -> Assignment_operator Assignment_expression | ? 
+int Assignment_expression1Linha(){
+	if(Assignment_operator()){
+		if (Assignment_expression()){
+			return 1;
+		}
+		else{return 0;}
+	}
+	else {return 1;}
 }
 
 //Logical_or_expression -> Logical_and_expression Logical_or_expression1Hash 
@@ -606,12 +613,9 @@ int Multiplicative_expression1Hash(){
 	else {return 1;}
 }
 
-//Unary_expression -> Postfix_expression | ++ Unary_expression | -- Unary_expression | Unary_operator Unary_expression 
+//Unary_expression -> ++ Unary_expression | -- Unary_expression | Unary_operator Unary_expression | Postfix_expression 
 int Unary_expression(){
-	if (Postfix_expression()){
-		return 1;
-	}
-	else if(tk == tkINCREMENT){// ++
+	if(tk == tkINCREMENT){// ++
 		getToken(); 
 		if (Unary_expression()){
 			return 1;
@@ -630,6 +634,9 @@ int Unary_expression(){
 			return 1;
 		}
 		else{return 0;}
+	}
+	else if (Postfix_expression()){
+		return 1;
 	}
 	else{return 0;}
 }
@@ -681,7 +688,7 @@ int Postfix_expression1Hash(){
 	else {return 1;}
 }
 
-//Primary_expression -> identifier | Constant | ( Expression ) 
+//Primary_expression -> identifier | Constant 
 int Primary_expression(){
 	if(tk == tkIDENTIFIER){// identifier
 		getToken();
@@ -689,17 +696,6 @@ int Primary_expression(){
 	}
 	else if (Constant()){
 		return 1;
-	}
-	else if(tk == tkOPEN_PARENTHESIS){// (
-		getToken(); 
-		if (Expression()){
-			if(tk == tkCLOSE_PARENTHESIS){// )
-				getToken();
-				return 1;
-			}
-			else{return 0;}
-		}
-		else{return 0;}
 	}
 	else{return 0;}
 }

@@ -25,9 +25,7 @@ namespace ParsingEduCodeCSharpConverter
                 stringBuilder.AppendLine(line);
                 line = filetext.ReadLine();
             }
-
-
-
+                       
             var syntactic = stringBuilder.ToString()
                 .Replace("return 1", "return true")
                 .Replace("return 0", "return false")
