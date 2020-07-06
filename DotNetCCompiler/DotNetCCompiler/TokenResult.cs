@@ -15,6 +15,8 @@ namespace DotNetCCompiler
             Column = column;
         }
 
+        public override string ToString() => $"{Token.ToString()} {Label} linha {Line} col {Column}";
+
         public eToken Token { get; set; }
         public string Label { get; set; }
         public int Line { get; set; }

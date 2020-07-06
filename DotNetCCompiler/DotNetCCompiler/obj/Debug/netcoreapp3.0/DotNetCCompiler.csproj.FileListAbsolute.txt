@@ -8,3 +8,4 @@ C:\GitHub\CCompiler\DotNetCCompiler\DotNetCCompiler\obj\Debug\netcoreapp3.0\DotN
 C:\GitHub\CCompiler\DotNetCCompiler\DotNetCCompiler\obj\Debug\netcoreapp3.0\DotNetCCompiler.AssemblyInfo.cs
 C:\GitHub\CCompiler\DotNetCCompiler\DotNetCCompiler\obj\Debug\netcoreapp3.0\DotNetCCompiler.dll
 C:\GitHub\CCompiler\DotNetCCompiler\DotNetCCompiler\obj\Debug\netcoreapp3.0\DotNetCCompiler.pdb
+C:\GitHub\CCompiler\DotNetCCompiler\DotNetCCompiler\obj\Debug\netcoreapp3.0\DotNetCCompiler.csprojAssemblyReference.cache

@@ -36,3 +36,4 @@ msbuild.err
 msbuild.wrn
 *.cache
 DotNetCCompiler/DotNetCCompiler/obj/Debug/netcoreapp3.0/DotNetCCompiler.csproj.FileListAbsolute.txt
+DotNetCCompiler/.vs/DotNetCCompiler/v16/Browse.VC.opendb

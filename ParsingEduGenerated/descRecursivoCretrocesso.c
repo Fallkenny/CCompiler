@@ -4,47 +4,46 @@
 
 // DEFINE TOKENS
 
-#define tkCONSTANT 1 // constant
-#define tkIDENTIFIER 2 // identifier
-#define tkMAIN 3 // main
+#define tkINTEGER_CONSTANT 1 // int_constant
+#define tkFLOATING_POINT_CONSTANT 2 // float_constant
+#define tkIDENTIFIER 3 // identifier
 #define tkOPEN_BRACE 4 // {
 #define tkCLOSE_BRACE 5 // }
 #define tkSEMICOLON 6 // ;
 #define tkCOMMA 7 // ,
 #define tkASSIGNENT 8 // =
-#define tkOPEN_BRACKET 9 // [
-#define tkCLOSE_BRACKET 10 // ]
-#define tkDOT 11 // .
-#define tkLOGICAL_NOT 12 // !
-#define tkLOGICAL_OR 13 // ||
-#define tkLOGICAL_AND 14 // &&
-#define tkEQUALS 15 // ==
-#define tkNOT_EQUALS 16 // !=
-#define tkLESS 17 // <
-#define tkGREATER 18 // >
-#define tkPLUS 19 // +
-#define tkMINUS 20 // -
-#define tkPRODUCT 21 // *
-#define tkDIVISION 22 // /
-#define tkMODULE 23 // %
-#define tkINCREMENT 24 // ++
-#define tkDECREMENT 25 // --
-#define tkOPEN_PARENTHESIS 26 // (
-#define tkCLOSE_PARENTHESIS 27 // )
-#define tkPRODUCT_ASSIGNMENT 28 // *=
-#define tkDIVISION_ASSIGNMENT 29 // /=
-#define tkMODULE_ASSIGNENT 30 // %=
-#define tkPLUS_ASSIGNENT 31 // +=
-#define tkMINUS_ASSIGNENT 32 // -=
-#define tkFOR 33 // for
-#define tkWHILE 34 // while
-#define tkIF 35 // if
-#define tkDO 36 // do
-#define tkELSE 37 // else
-#define tkINT 38 // int
-#define tkFLOAT 39 // float
-#define tkCONTINUE 40 // continue
-#define tkBREAK 41 // break
+#define tkLOGICAL_NOT 9 // !
+#define tkLOGICAL_OR 10 // ||
+#define tkLOGICAL_AND 11 // &&
+#define tkEQUALS 12 // ==
+#define tkNOT_EQUALS 13 // !=
+#define tkLESS 14 // <
+#define tkGREATER 15 // >
+#define tkLESS_OR_EQUAL 16 // <=
+#define tkGREATER_OR_EQUAL 17 // >=
+#define tkPLUS 18 // +
+#define tkMINUS 19 // -
+#define tkPRODUCT 20 // *
+#define tkDIVISION 21 // /
+#define tkMODULE 22 // %
+#define tkINCREMENT 23 // ++
+#define tkDECREMENT 24 // --
+#define tkOPEN_PARENTHESIS 25 // (
+#define tkCLOSE_PARENTHESIS 26 // )
+#define tkPRODUCT_ASSIGNMENT 27 // *=
+#define tkDIVISION_ASSIGNMENT 28 // /=
+#define tkMODULE_ASSIGNENT 29 // %=
+#define tkPLUS_ASSIGNENT 30 // +=
+#define tkMINUS_ASSIGNENT 31 // -=
+#define tkFOR 32 // for
+#define tkWHILE 33 // while
+#define tkIF 34 // if
+#define tkDO 35 // do
+#define tkELSE 36 // else
+#define tkINT 37 // int
+#define tkFLOAT 38 // float
+#define tkCONTINUE 39 // continue
+#define tkBREAK 40 // break
 
 // Variáveis Globais <o>
 
@@ -66,8 +65,6 @@ int Main_func();
 
 int Compound_statement();
 
-int Compound_statement'();
-
 int Block_item_list();
 
 int Block_item_list1Hash();
@@ -76,11 +73,7 @@ int Block_item();
 
 int Declaration();
 
-int Declaration'();
-
 int Declaration_specifiers();
-
-int Declaration_specifiers'();
 
 int Type_specifier();
 
@@ -90,29 +83,7 @@ int Init_declarator_list1Hash();
 
 int Init_declarator();
 
-int Init_declarator'();
-
-int Initializer();
-
-int Initializer'();
-
-int Initializer_list();
-
-int Initializer_list1Hash();
-
-int Initializer_list1Hash();
-
 int Assignment_expression();
-
-int Designation();
-
-int Designator_list();
-
-int Designator_list1Hash();
-
-int Designator();
-
-int Conditional_expression();
 
 int Logical_or_expression();
 
@@ -146,14 +117,22 @@ int Program(){
 	else {return 0;}
 }
 
-//Main_func -> int main Compound_statement 
+//Main_func -> int identifier ( ) Compound_statement 
 int Main_func(){
 	if(tk == tkINT){// int
 		getToken();
-		if(tk == tkMAIN){// main
+		if(tk == tkIDENTIFIER){// identifier
 			getToken();
-			if (Compound_statement()){
-				return 1;
+			if(tk == tkOPEN_PARENTHESIS){// (
+				getToken();
+				if(tk == tkCLOSE_PARENTHESIS){// )
+					getToken();
+					if (Compound_statement()){
+						return 1;
+					}
+					else {return 0;}
+				}
+				else {return 0;}
 			}
 			else {return 0;}
 		}
@@ -162,7 +141,7 @@ int Main_func(){
 	else {return 0;}
 }
 
-//Compound_statement -> { Compound_statement' 
+//Compound_statement -> { } | { Block_item_list } 
 int Compound_statement(){
 	if(tk == tkOPEN_BRACE){// {
 		getToken();
@@ -211,13 +190,13 @@ int Block_item(){
 	else {return 0;}
 }
 
-//Declaration -> Declaration_specifiers Declaration' 
+//Declaration -> Declaration_specifiers ; | Declaration_specifiers Init_declarator_list ; 
 int Declaration(){
 	if (Declaration_specifiers()){
 	}
 }
 
-//Declaration_specifiers -> Type_specifier Declaration_specifiers' 
+//Declaration_specifiers -> Type_specifier Declaration_specifiers | Type_specifier 
 int Declaration_specifiers(){
 	if (Type_specifier()){
 	}
@@ -262,14 +241,14 @@ int Init_declarator_list1Hash(){
 	else {return 1;}
 }
 
-//Init_declarator -> identifier Init_declarator' 
+//Init_declarator -> identifier = Assignment_expression | identifier 
 int Init_declarator(){
 	if(tk == tkIDENTIFIER){// identifier
 		getToken();
 		marcaPosToken(); // FUNÇÃO NECESSÁRIA CASO SEJA NECESSÁRIO RESTAURAR O TOKEN ANTERIOR
 		if(tk == tkASSIGNENT){// =
 			getToken();
-			if (Initializer()){
+			if (Assignment_expression()){
 				return 1;
 			}
 			else{return 0;}
@@ -280,74 +259,9 @@ int Init_declarator(){
 	}
 }
 
-//Initializer -> { Initializer_list Initializer' | Assignment_expression 
-int Initializer(){
-	if(tk == tkOPEN_BRACE){// {
-		getToken();
-		if (Initializer_list()){
-		}
-		else if (Assignment_expression()){
-		return 1;
-	}
-	else {return 0;}
-}
-
-//Initializer_list -> Designation Initializer Initializer_list1Hash | Initializer Initializer_list1Hash 
-int Initializer_list(){
-	if (Designation()){
-		if (Initializer()){
-			if (Initializer_list1Hash()){
-				return 1;
-			}
-			else {return 0;}
-		}
-		else {return 0;}
-	}
-	else if (Initializer()){
-		if (Initializer_list1Hash()){
-			return 1;
-		}
-		else {return 0;}
-	}
-	else {return 0;}
-}
-
-//Initializer_list1Hash -> , Initializer_list1Hash | ? 
-int Initializer_list1Hash(){
-	if(tk == tkCOMMA){// ,
-		getToken();
-		marcaPosToken(); // FUNÇÃO NECESSÁRIA CASO SEJA NECESSÁRIO RESTAURAR O TOKEN ANTERIOR
-		if (Designation()){
-			if (Initializer()){
-				if (Initializer_list1Hash()){
-					return 1;
-				}
-				else{return 0;}
-			}
-			else{return 0;}
-		}
-		else{return 0;}
-if (Initializer()){
-					if (Initializer_list1Hash()){
-						return 1;
-					}
-					else{return 0;}
-				}
-				else{return 0;}
-			}
-			else{return 0;}
-		}
-		else{return 0;}
-				}
-			}
-		}
-	}
-	else {return 1;}
-}
-
-//Assignment_expression -> Conditional_expression | Unary_expression Assignment_operator Assignment_expression 
+//Assignment_expression -> Logical_or_expression | Unary_expression Assignment_operator Assignment_expression 
 int Assignment_expression(){
-	if (Conditional_expression()){
+	if (Logical_or_expression()){
 		return 1;
 	}
 	else if (Unary_expression()){
@@ -358,72 +272,6 @@ int Assignment_expression(){
 			else {return 0;}
 		}
 		else {return 0;}
-	}
-	else {return 0;}
-}
-
-//Designation -> Designator_list = 
-int Designation(){
-	if (Designator_list()){
-		if(tk == tkASSIGNENT){// =
-			getToken();
-			return 1;
-		}
-		else {return 0;}
-	}
-	else {return 0;}
-}
-
-//Designator_list -> Designator Designator_list1Hash 
-int Designator_list(){
-	if (Designator()){
-		if (Designator_list1Hash()){
-			return 1;
-		}
-		else {return 0;}
-	}
-	else {return 0;}
-}
-
-//Designator_list1Hash -> Designator Designator_list1Hash | ? 
-int Designator_list1Hash(){
-	if (Designator()){
-		if (Designator_list1Hash()){
-			return 1;
-		}
-		else {return 0;}
-	}
-	else {return 1;}
-}
-
-//Designator -> [ Conditional_expression ] | . identifier 
-int Designator(){
-	if(tk == tkOPEN_BRACKET){// [
-		getToken();
-		if (Conditional_expression()){
-			if(tk == tkCLOSE_BRACKET){// ]
-				getToken();
-				return 1;
-			}
-			else {return 0;}
-		}
-		else {return 0;}
-	}
-	else if(tk == tkDOT){// .
-		getToken();
-		if(tk == tkIDENTIFIER){// identifier
-			getToken();
-			return 1;
-		}
-		else {return 0;}
-	}
-	else {return 0;}
-}
-
-//Conditional_expression -> Logical_or_expression 
-int Conditional_expression(){
-	if (Logical_or_expression()){
-		return 1;
 	}
 	else {return 0;}
 }
