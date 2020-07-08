@@ -10,6 +10,8 @@ namespace DotNetCCompiler
         eToken _token;
         TokenResult _currentToken;
 
+        public SymbolTable SymbolTable = new SymbolTable();
+
         private LinkedList<TokenResult> _linkedList;
         private LinkedList<TokenResult>.Enumerator _tokenEnumerator;
 

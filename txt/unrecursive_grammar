@@ -1,0 +1,52 @@
+Program -> Main_func 
+Main_func -> bool identifier ( ) Compound_statement 
+Compound_statement -> { Compound_statement1Linha 
+Compound_statement1Linha -> } | Block_item_list } 
+Block_item_list -> Block_item Block_item_list1Hash
+Block_item_list1Hash -> Block_item Block_item_list1Hash | ?         
+Block_item -> Declaration | Statement         
+Declaration -> Declaration_specifiers Declaration1Linha         
+Declaration1Linha -> ; | Init_declarator_list ; 
+Declaration_specifiers -> Type_specifier Declaration_specifiers1Linha 
+Declaration_specifiers1Linha -> Declaration_specifiers | ? 
+Type_specifier -> bool | float 
+Init_declarator_list -> Init_declarator Init_declarator_list1Hash 
+Init_declarator_list1Hash -> , Init_declarator Init_declarator_list1Hash | ? 
+Init_declarator -> identifier Init_declarator1Linha 
+Init_declarator1Linha -> = Assignment_expression | ?
+Assignment_expression -> Logical_or_expression Assignment_expression1Linha 
+Assignment_expression1Linha -> Assignment_operator Assignment_expression | ? 
+Logical_or_expression -> Logical_and_expression Logical_or_expression1Hash 
+Logical_or_expression1Hash -> ii Logical_and_expression Logical_or_expression1Hash | ? 
+Logical_and_expression -> Equality_expression Logical_and_expression1Hash 
+Logical_and_expression1Hash -> && Equality_expression Logical_and_expression1Hash | ? 
+Equality_expression -> Relational_expression Equality_expression1Hash 
+Equality_expression1Hash -> == Relational_expression Equality_expression1Hash | != Relational_expression Equality_expression1Hash | ? 
+Relational_expression -> Additive_expression Relational_expression1Hash 
+Relational_expression1Hash -> Relational_operator Additive_expression Relational_expression1Hash | ? 
+Relational_operator -> > | < | >= | <= 
+Additive_expression -> Multiplicative_expression Additive_expression1Hash 
+Additive_expression1Hash -> + Multiplicative_expression Additive_expression1Hash | - Multiplicative_expression Additive_expression1Hash | ? 
+Multiplicative_expression -> Unary_expression Multiplicative_expression1Hash 
+Multiplicative_expression1Hash -> * Unary_expression Multiplicative_expression1Hash | / Unary_expression Multiplicative_expression1Hash | % Unary_expression Multiplicative_expression1Hash | ? 
+Unary_expression -> ++ Unary_expression | -- Unary_expression | Unary_operator Unary_expression | Postfix_expression 
+Unary_operator -> + | - | ! 
+Postfix_expression -> Primary_expression Postfix_expression1Hash 
+Postfix_expression1Hash -> ++ Postfix_expression1Hash | -- Postfix_expression1Hash | ? 
+Primary_expression -> identifier | Constant 
+Constant -> int_constant | float_constant 
+Assignment_operator -> = | *= | /= | %= | += | -= 
+Statement -> Compound_statement | Expression_statement | If_statement | Iteration_statement | Jump_statement 
+Expression_statement -> ; | Expression ; 
+Expression -> Assignment_expression Expression1Hash 
+Expression1Hash -> , Assignment_expression Expression1Hash | ? 
+If_statement -> if ( Expression ) Statement If_statement1Linha 
+If_statement1Linha -> else Statement | ? 
+Iteration_statement -> While_statement | Do_while_statement | For_statement 
+While_statement -> while ( Expression ) Statement 
+Do_while_statement -> do Statement while ( Expression ) ; 
+For_statement -> for ( For_statement2Linha 
+For_statement2Linha -> Expression_statement Expression_statement For_statement1Linha | Declaration Expression_statement For_statement3Linha 
+For_statement3Linha -> ) Statement | Expression ) Statement 
+For_statement1Linha -> ) Statement | Expression ) Statement 
+Jump_statement -> continue ; | break ; 

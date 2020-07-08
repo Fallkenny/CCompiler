@@ -6,7 +6,7 @@ int main()
     float devil = 6.66;
     if (a>b)
     {
-        c = b;
+        int c = b;
     }
     else if(b>=a)    
     {

@@ -1,10 +1,10 @@
 int main()
 {
-	c = 2;
-	c = b;
 
-	if (a > b)
+	int c;
+	if (1)
 	{
+		int c =1;
 	}
 	else if (b >= a)
 	{
