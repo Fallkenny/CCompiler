@@ -20,8 +20,5 @@ namespace DotNetCCompiler
 
         public Dictionary<string, Symbol> Symbols { get; set; } = new Dictionary<string, Symbol>();
         public SymbolTable ParentContext { get; set; } = null;
-
-        
-
     }
 }

@@ -13,7 +13,7 @@ int main()
         a = c++;
         b = ++c;
     }
-    if(devil > a+b+c)
+    if(devil < a+b+c)
     {
         a= 6*100;
         b = 6*10;
