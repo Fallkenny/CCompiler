@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<parsingEDUConfig nome="ParsingEDU" versao="v1.0" autor="Diogo Manica" orientador="Prof. Dr. Ricardo Vargas Dorneles" curso="Ciencia da Computacao" ano="2018">
+  <representacaoVazioParsingEDU>
+    <SimboloVazio>lambda</SimboloVazio>
+  </representacaoVazioParsingEDU>
+  <geracaoTokensParsingEDU>
+    <GeracaoTokens>1</GeracaoTokens>
+  </geracaoTokensParsingEDU>
+</parsingEDUConfig>

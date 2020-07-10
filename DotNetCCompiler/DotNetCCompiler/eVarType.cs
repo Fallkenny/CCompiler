@@ -6,6 +6,7 @@ namespace DotNetCCompiler
 {
     public enum eVarType
     {
+        ERROR,
         INT,
         FLOAT,
     }

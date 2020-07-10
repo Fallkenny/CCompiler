@@ -4,7 +4,7 @@
 #include <stdlib.h>
 
 // Lista de tokens reconhecidos e seus códigos numéricos
-
+#pragma warning(disable : 4996)
 #define TKId 1
 #define TKVoid 2
 #define TKInt 3

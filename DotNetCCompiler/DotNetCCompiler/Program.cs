@@ -8,15 +8,15 @@ namespace DotNetCCompiler
         static void Main(string[] args)
         {
             Console.WriteLine("Hello World!");
-            test();
-            var testFile = @"C:\GitHub\CCompiler\code\testfile.c";
+            //test();
+            var testFile = @"C:\GitHub\CCompiler\code\testinprogress.c";
             Console.WriteLine($"Iniciando análise sintática: {testFile}");
             var fileStream = File.OpenRead(testFile);
             var lexical = new LexicalAnalyzer(fileStream);
             lexical.Analyze();
             Console.WriteLine($"Verifique o arquivo de saida gerado em: {(LexicalAnalyzer.OutStreamWriter.BaseStream as FileStream).Name}");
 
-            var syntactic = new SyntacticAnalyzer(lexical.TokenResultList);
+            var syntactic = new Syntatic_SemmanticAnalyser(lexical.TokenResultList);
             syntactic.Analyze();
         }
 

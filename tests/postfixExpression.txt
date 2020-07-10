@@ -1,0 +1,5 @@
+Postfix_expression SETA Postfix_expression ++ | Postfix_expression -- | Primary_expression
+Primary_expression SETA identifier | Constant | ( Expression )
+Constant SETA int_constant | float_constant
+Expression_statement SETA ; | Expression ;
+Expression SETA  Expression , Postfix_expression | Postfix_expression 
