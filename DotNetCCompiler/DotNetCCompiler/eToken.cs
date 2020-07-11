@@ -53,5 +53,6 @@ namespace DotNetCCompiler
         FLOATING_POINT_CONSTANT,
         GREATER_OR_EQUAL,
         LESS_OR_EQUAL,
+        EOF,
     }
 }

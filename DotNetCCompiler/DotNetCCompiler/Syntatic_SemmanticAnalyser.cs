@@ -34,20 +34,352 @@ namespace DotNetCCompiler
 
         void GetToken()
         {
-            _tokenEnumerator.MoveNext();
-            _currentToken = _tokenEnumerator.Current;
-            _token = _currentToken.Token;
+            var moved = _tokenEnumerator.MoveNext();
+            if (moved)
+            {
+                _currentToken = _tokenEnumerator.Current;
+                _token = _currentToken.Token;
+                return;
+            }
+            _currentToken = null;
+            _token = eToken.EOF;
         }
 
         bool Program()
         {
-            if (Additive_expression(out string place, out string code))
+            if (Expression_statement(out string place, out string code))
             {
                 return true;
             }
             else
             {
                 return false;
+            }
+        }
+
+        //Assignment_expression -> Logical_or_expression Assignment_expression1Linha 
+        bool Assignment_expression(out string assExpPlace, out string assExpCode)
+        {
+            assExpPlace = "";
+            assExpCode = "";
+            if (Logical_or_expression(out string logicOrExpPlace, out string logicOrExpCode))
+            {
+                var assExp1Hash1_IPlace = logicOrExpPlace;
+                var assExp1Hash1_ICode = logicOrExpCode;
+                if (Assignment_expression1Linha(assExp1Hash1_IPlace, assExp1Hash1_ICode,
+                        out string assExp1Hash_SPlace, out string assExp1Hash_SCode))
+                {
+                    assExpPlace = assExp1Hash_SPlace;
+                    assExpCode = assExp1Hash_SCode;
+                    return true;
+                }
+                else { return false; }
+            }
+            else { return false; }
+        }
+
+        //Assignment_expression1Linha -> Assignment_operator Assignment_expression | ? 
+        bool Assignment_expression1Linha(string assExp1Hash1_IPlace, string assExp1Hash1_ICode,
+                        out string assExp1Hash_SPlace, out string assExp1Hash_SCode)
+        {
+            assExp1Hash_SPlace = "";
+            assExp1Hash_SCode = "";
+            if (Assignment_operator(out string assOperator))
+            {
+                if (Assignment_expression(out string assExpPlace, out string assExpCode))
+                {
+                    assExp1Hash_SPlace = assExp1Hash1_IPlace;
+                    assExp1Hash_SCode = $"{assExp1Hash1_ICode}{assExpCode}{assExp1Hash1_IPlace}{assOperator}{assExpPlace}\n";
+                    return true;
+                }
+                else { return false; }
+            }
+            else
+            {
+                assExp1Hash_SPlace = assExp1Hash1_IPlace;
+                assExp1Hash_SCode = assExp1Hash1_ICode;
+                return true;
+            }
+        }
+
+        //Assignment_operator -> = | *= | /= | %= | += | -= 
+        bool Assignment_operator(out string assOperator)
+        {
+            assOperator = "";
+            switch (_token)
+            {
+                case eToken.ASSIGNENT:
+                case eToken.PRODUCT_ASSIGNMENT:
+                case eToken.DIVISION_ASSIGNMENT:
+                case eToken.MODULE_ASSIGNENT:
+                case eToken.PLUS_ASSIGNENT:
+                case eToken.MINUS_ASSIGNENT:
+                    assOperator = _currentToken.Label;
+                    GetToken();
+                    return true;
+                default:
+                    return false;
+            }
+        }
+
+        //Logical_or_expression -> Logical_and_expression Logical_or_expression1Hash 
+        bool Logical_or_expression(out string logicOrExpPlace, out string logicOrExpCode)
+        {
+            logicOrExpPlace = "";
+            logicOrExpCode = "";
+            if (Logical_and_expression(out string logicAndExpPlace, out string logicAndExpCode))
+            {
+                var logicOrExp1Hash_IPlace = logicAndExpPlace;
+                var logicOrExp1Hash_ICode = logicAndExpCode;
+                if (Logical_or_expression1Hash(logicOrExp1Hash_IPlace,
+                    logicOrExp1Hash_ICode,
+                    out string logicOrExp1Hash_SPlace, out string logicOrExp1Hash_SCode))
+                {
+                    logicOrExpPlace = logicOrExp1Hash_SPlace;
+                    logicOrExpCode = logicOrExp1Hash_SCode;
+                    return true;
+                }
+                else { return false; }
+            }
+            else { return false; }
+        }
+
+        //Logical_or_expression1Hash -> || Logical_and_expression Logical_or_expression1Hash | ? 
+        bool Logical_or_expression1Hash(
+            string logicOrExp1Hash_IPlace, string logicOrExp1Hash_ICode,
+            out string logicOrExp1Hash_SPlace, out string logicOrExp1Hash_SCode)
+        {
+            logicOrExp1Hash_SPlace = "";
+            logicOrExp1Hash_SCode = "";
+            if (_token == eToken.LOGICAL_OR)
+            {// ||
+                GetToken();
+                if (Logical_and_expression(out string logicAndExpPlace, out string logicAndExpCode))
+                {
+                    var logicOrExp1Hash1_IPlace = CreateTempVar();
+                    var logicOrExp1Hash1_ICode = logicOrExp1Hash_ICode + logicAndExpCode + CreateCode("&&", logicOrExp1Hash1_IPlace, logicOrExp1Hash_IPlace, logicAndExpPlace);
+
+                    if (Logical_or_expression1Hash(logicOrExp1Hash1_IPlace, logicOrExp1Hash1_ICode,
+                        out string logicOrExp1HashPlace, out string logicOrExp1HashCode))
+                    {
+                        logicOrExp1Hash_SPlace = logicOrExp1HashPlace;
+                        logicOrExp1Hash_SCode = logicOrExp1HashCode;
+
+                        return true;
+                    }
+                    else { return false; }
+                }
+                else { return false; }
+            }
+            else
+            {
+                logicOrExp1Hash_SPlace = logicOrExp1Hash_IPlace;
+                logicOrExp1Hash_SCode = logicOrExp1Hash_ICode;
+                return true;
+            }
+        }
+
+        //Logical_and_expression -> Equality_expression Logical_and_expression1Hash 
+        bool Logical_and_expression(out string logicAndExpPlace, out string logicAndExpCode)
+        {
+            logicAndExpPlace = "";
+            logicAndExpCode = "";
+            if (Equality_expression(out string eqExpPlace, out string eqExpCode))
+            {
+                var logicAndExp1Hash_IPlace = eqExpPlace;
+                var logicAndExp1Hash_ICode = eqExpCode;
+                if (Logical_and_expression1Hash(logicAndExp1Hash_IPlace,
+                    logicAndExp1Hash_ICode,
+                    out string logicAndExp1Hash_SPlace, out string logicAndExp1Hash_SCode))
+                {
+                    logicAndExpPlace = logicAndExp1Hash_SPlace;
+                    logicAndExpCode = logicAndExp1Hash_SCode;
+                    return true;
+                }
+                else { return false; }
+            }
+            else { return false; }
+        }
+
+        //Logical_and_expression1Hash -> && Equality_expression Logical_and_expression1Hash | ? 
+        bool Logical_and_expression1Hash(
+            string logicAndExp1Hash_IPlace, string logicAndExp1Hash_ICode,
+            out string logicAndExp1Hash_SPlace, out string logicAndExp1Hash_SCode)
+        {
+            logicAndExp1Hash_SPlace = "";
+            logicAndExp1Hash_SCode = "";
+            if (_token == eToken.LOGICAL_AND)
+            {// &&
+                GetToken();
+                if (Equality_expression(out string eqExpPlace, out string eqExpCode))
+                {
+                    var logicAndExp1Hash1_IPlace = CreateTempVar();
+                    var logicAndExp1Hash1_ICode = logicAndExp1Hash_ICode + eqExpCode + CreateCode("&&", logicAndExp1Hash1_IPlace, logicAndExp1Hash_IPlace, eqExpPlace);
+
+                    if (Logical_and_expression1Hash(logicAndExp1Hash1_IPlace, logicAndExp1Hash1_ICode,
+                        out string logicAndExp1HashPlace, out string logicAndExp1HashCode))
+                    {
+                        logicAndExp1Hash_SPlace = logicAndExp1HashPlace;
+                        logicAndExp1Hash_SCode = logicAndExp1HashCode;
+
+                        return true;
+                    }
+                    else { return false; }
+                }
+                else { return false; }
+            }
+            else
+            {
+                logicAndExp1Hash_SPlace = logicAndExp1Hash_IPlace;
+                logicAndExp1Hash_SCode = logicAndExp1Hash_ICode;
+                return true;
+            }
+        }
+
+        //Equality_expression -> Relational_expression Equality_expression1Hash 
+        bool Equality_expression(out string eqExpPlace, out string eqExpCode)
+        {
+            eqExpPlace = "";
+            eqExpCode = "";
+            if (Relational_expression(out string relExpPlace, out string relExpCode))
+            {
+                var eqExp1Hash_IPlace = relExpPlace;
+                var eqExp1Hash_ICode = relExpCode;
+                if (Equality_expression1Hash(eqExp1Hash_IPlace,
+                    eqExp1Hash_ICode,
+                    out string eqExp1Hash_SPlace, out string eqExp1Hash_SCode))
+                {
+                    eqExpPlace = eqExp1Hash_SPlace;
+                    eqExpCode = eqExp1Hash_SCode;
+                    return true;
+                }
+                else { return false; }
+            }
+            else { return false; }
+        }
+
+        //Equality_expression1Hash -> == Relational_expression Equality_expression1Hash | != Relational_expression Equality_expression1Hash | ? 
+        bool Equality_expression1Hash(
+              string eqExp1Hash_IPlace, string eqExp1Hash_ICode,
+              out string eqExp1Hash_SPlace, out string eqExp1Hash_SCode)
+        {
+            eqExp1Hash_SPlace = "";
+            eqExp1Hash_SCode = "";
+            if (Equality_operator(out string eqOperator))
+            {
+                if (Relational_expression(out string relExpPlace, out string relExpCode))
+                {
+                    var eqExp1Hash1_IPlace = CreateTempVar();
+                    var eqExp1Hash1_ICode = eqExp1Hash_ICode + relExpCode + CreateCode(eqOperator, eqExp1Hash1_IPlace, eqExp1Hash_IPlace, relExpPlace);
+
+                    if (Equality_expression1Hash(eqExp1Hash1_IPlace, eqExp1Hash1_ICode,
+                        out string eqExp1HashPlace, out string eqExp1HashCode))
+                    {
+                        eqExp1Hash_SPlace = eqExp1HashPlace;
+                        eqExp1Hash_SCode = eqExp1HashCode;
+
+                        return true;
+                    }
+                    else { return false; }
+                }
+                else { return false; }
+            }
+            else
+            {
+                eqExp1Hash_SPlace = eqExp1Hash_IPlace;
+                eqExp1Hash_SCode = eqExp1Hash_ICode;
+                return true;
+            }
+        }
+
+        bool Equality_operator(out string eqOperator)
+        {
+            eqOperator = "";
+            switch (_token)
+            {
+                case eToken.EQUALS:
+                case eToken.NOT_EQUALS:
+                    eqOperator = _currentToken.Label;
+                    GetToken();
+                    return true;
+                default:
+                    return false;
+            }
+        }
+
+        //Relational_expression -> Additive_expression Relational_expression1Hash 
+        bool Relational_expression(out string relExpPlace, out string relExpCode)
+        {
+            relExpPlace = "";
+            relExpCode = "";
+            if (Additive_expression(out string addExpPlace, out string addExpCode))
+            {
+                var relExp1Hash_IPlace = addExpPlace;
+                var relExp1Hash_ICode = addExpCode;
+                if (Relational_expression1Hash(relExp1Hash_IPlace,
+                    relExp1Hash_ICode,
+                    out string relExp1Hash_SPlace, out string relExp1Hash_SCode))
+                {
+                    relExpPlace = relExp1Hash_SPlace;
+                    relExpCode = relExp1Hash_SCode;
+                    return true;
+                }
+                else { return false; }
+            }
+            else { return false; }
+        }
+
+
+        //Relational_expression1Hash -> Relational_operator Additive_expression Relational_expression1Hash | ? 
+        bool Relational_expression1Hash(
+            string relExp1Hash_IPlace, string relExp1Hash_ICode,
+            out string relExp1Hash_SPlace, out string relExp1Hash_SCode)
+        {
+            relExp1Hash_SPlace = "";
+            relExp1Hash_SCode = "";
+            if (Relational_operator(out string relOperator))
+            {
+                if (Additive_expression(out string addExpPlace, out string addExpCode))
+                {
+                    var relExp1Hash1_IPlace = CreateTempVar();
+                    var relExp1Hash1_ICode = relExp1Hash_ICode + addExpCode + CreateCode(relOperator, relExp1Hash1_IPlace, relExp1Hash_IPlace, addExpPlace);
+
+                    if (Relational_expression1Hash(relExp1Hash1_IPlace, relExp1Hash1_ICode,
+                        out string relExp1HashPlace, out string relExp1HashCode))
+                    {
+                        relExp1Hash_SPlace = relExp1HashPlace;
+                        relExp1Hash_SCode = relExp1HashCode;
+
+                        return true;
+                    }
+                    else { return false; }
+                }
+                else { return false; }
+            }
+            else
+            {
+                relExp1Hash_SPlace = relExp1Hash_IPlace;
+                relExp1Hash_SCode = relExp1Hash_ICode;
+                return true;
+            }
+        }
+
+        //Relational_operator -> > | < | >= | <= 
+        bool Relational_operator(out string relOperator)
+        {
+            relOperator = "";
+
+            switch (_token)
+            {
+                case eToken.GREATER:
+                case eToken.LESS:
+                case eToken.GREATER_OR_EQUAL:
+                case eToken.LESS_OR_EQUAL:
+                    relOperator = _currentToken.Label;
+                    GetToken();
+                    return true;
+                default:
+                    return false;
             }
         }
 
@@ -87,6 +419,7 @@ namespace DotNetCCompiler
                 {
                     var addExp1Hash1_IPlace = CreateTempVar();
                     var addExp1Hash1_ICode = addExp1Hash_ICode + mulExpCode + CreateCode("+", addExp1Hash1_IPlace, addExp1Hash_IPlace, mulExpPlace);
+
                     if (Additive_expression1Hash(addExp1Hash1_IPlace, addExp1Hash1_ICode,
                         out string addExp1HashPlace, out string addExp1HashCode))
                     {
@@ -229,7 +562,7 @@ namespace DotNetCCompiler
                 {
                     var newUnaryPlace = CreateTempVar();
                     switch (_unToken)
-                    {                        
+                    {
                         case eToken.PLUS:
                             unExpCode = $"{unExpCode1}{newUnaryPlace} = +{unExpPlace}\n";
                             break;
@@ -248,18 +581,18 @@ namespace DotNetCCompiler
                         default:
                             return false;
                     }
-                    if(_unToken == eToken.PLUS||
-                        _unToken == eToken.MINUS||
+                    if (_unToken == eToken.PLUS ||
+                        _unToken == eToken.MINUS ||
                         _unToken == eToken.LOGICAL_NOT)
-                    unExpPlace = newUnaryPlace;
+                        unExpPlace = newUnaryPlace;
                     return true;
                 }
                 else { return false; }
             }
-            else if (Primary_expression(out string primExpPlace, out string primExpCode)) // trocar para Postfix_expression
+            else if (Postfix_expression(out string postFixExpPlace, out string postFixExpCode)) // trocar para Postfix_expression
             {
-                unExpPlace = primExpPlace;
-                unExpCode = primExpCode;
+                unExpPlace = postFixExpPlace;
+                unExpCode = postFixExpCode;
                 return true;
             }
             else { return false; }
@@ -285,15 +618,20 @@ namespace DotNetCCompiler
             }
         }
 
-        //Postfix_expression -> Primary_expression Postfix_expression1Hash
-        bool Postfix_expression(out string postFixExpressionPlace, out string postFixExpressionCode)
+        //Postfix_expression -> Primary_expression Postfix_expression1Linha 
+        bool Postfix_expression(out string postFixExpPlace, out string postFixExpCode)
         {
-            postFixExpressionPlace = "";
-            postFixExpressionCode = "";
-            if (Primary_expression(out postFixExpressionPlace, out postFixExpressionCode))
+            postFixExpPlace = "";
+            postFixExpCode = "";
+            if (Primary_expression(out string primExpPlace, out string primExpCode))
             {
-                if (Postfix_expression1Hash(out postFixExpressionPlace, out postFixExpressionCode))
+                var postFixExp1_IPlace = primExpPlace;
+                var postFixExp1_ICode = primExpCode;
+                if (Postfix_expression1Linha(postFixExp1_IPlace, postFixExp1_ICode,
+                        out string postFixExp1Hash_SPlace, out string postFixExp1Hash_SCode))
                 {
+                    postFixExpPlace = postFixExp1Hash_SPlace;
+                    postFixExpCode = postFixExp1Hash_SCode;
                     return true;
                 }
                 else { return false; }
@@ -301,30 +639,44 @@ namespace DotNetCCompiler
             else { return false; }
         }
 
-        //Postfix_expression1Hash -> ++ Postfix_expression1Hash | -- Postfix_expression1Hash | ? 
-        bool Postfix_expression1Hash(out string postFixExpressionPlace, out string postFixExpressionCode)
+        //Postfix_expression1Linha -> Postfix_operator | ? 
+        bool Postfix_expression1Linha(string postFixExp1_IPlace, string postFixExp1_ICode,
+                        out string postFixExp1Hash_SPlace, out string postFixExp1Hash_SCode)
         {
-            postFixExpressionPlace = "";
-            postFixExpressionCode = "";
-            if (_token == eToken.INCREMENT)
-            {// ++
-                GetToken();
-                if (Postfix_expression1Hash(out postFixExpressionPlace, out postFixExpressionCode))
-                {
-                    return true;
-                }
-                else { return false; }
+            if (Postfix_operator(out string postFixOperator))
+            {
+                postFixExp1Hash_SPlace = CreateTempVar();
+                postFixExp1Hash_SCode = $"{postFixExp1_ICode}{postFixExp1Hash_SPlace}={postFixExp1_IPlace}\n" +
+                                        CreateCode(postFixOperator, postFixExp1_IPlace, postFixExp1_IPlace, "1");
+                return true;
             }
-            else if (_token == eToken.DECREMENT)
-            {// --
-                GetToken();
-                if (Postfix_expression1Hash(out postFixExpressionPlace, out postFixExpressionCode))
-                {
-                    return true;
-                }
-                else { return false; }
+            else 
+            {
+                postFixExp1Hash_SPlace = postFixExp1_IPlace;
+                postFixExp1Hash_SCode = postFixExp1_ICode;
+                return true; 
             }
-            else { return true; }
+        }
+
+
+        //Postfix_operator -> ++ | -- 
+        bool Postfix_operator(out string postFixOperator)
+        {
+            postFixOperator = "";
+
+            switch (_token)
+            {
+                case eToken.DECREMENT:
+                    postFixOperator = "-";
+                    GetToken();
+                    return true;
+                case eToken.INCREMENT:
+                    postFixOperator = "+";
+                    GetToken();
+                    return true;
+                default:
+                    return false;
+            }
         }
 
         //Primary_expression -> identifier | Constant | ( Expression ) 
@@ -387,64 +739,84 @@ namespace DotNetCCompiler
             return $"{destiny}={ left }{operation}{right}\n";
         }
 
-
         private string CreateCode(string operation, string left, string right)
         {
             return $"{ left }{operation}{right}\n";
         }
+
         //Expression_statement -> ; | Expression ; 
-        //bool Expression_statement()
-        //{
-        //    if (_token == eToken.SEMICOLON)
-        //    {// ;
-        //        GetToken();
-        //        return true;
-        //    }
-        //    else if (Expression())
-        //    {
-        //        if (_token == eToken.SEMICOLON)
-        //        {// ;
-        //            GetToken();
-        //            return true;
-        //        }
-        //        else { return false; }
-        //    }
-        //    else { return false; }
-        //}
+        bool Expression_statement(out string expStmtPlace, out string expStmtCode)
+        {
+            expStmtPlace = "";
+            expStmtCode = "";
+            if (_token == eToken.SEMICOLON)
+            {// ;
+                GetToken();
+                return true;
+            }
+            else if (Expression(out string expPlace, out string expCode))
+            {
+                expStmtPlace = expPlace;
+                expStmtCode = expCode;
+                if (_token == eToken.SEMICOLON)
+                {// ;
+                    GetToken();
+                    return true;
+                }
+                else { return false; }
+            }
+            else { return false; }
+        }
 
-        //Expression -> Postfix_expression Expression1Hash 
-        //bool Expression()
-        //{
-        //    if (Postfix_expression())
-        //    {
-        //        if (Expression1Hash())
-        //        {
-        //            return true;
-        //        }
-        //        else { return false; }
-        //    }
-        //    else { return false; }
-        //}
+        //Expression -> Assignment_expression Expression1Hash 
+        bool Expression(out string expPlace, out string expCode)
+        {
+            expPlace = "";
+            expCode = "";
+            if (Assignment_expression(out string assExpressionPlace, out string assExpressionCode))
+            {
+                var exp1Hash_IPlace = assExpressionPlace;
+                var exp1Hash_ICode = assExpressionCode;
+                if (Expression1Hash(exp1Hash_IPlace, exp1Hash_ICode,
+                    out string exp1Hash_SPlace, out string exp1Hash_SCode))
+                {
+                    expPlace = exp1Hash_SPlace;
+                    expCode = exp1Hash_SCode;
+                    return true;
+                }
+                else { return false; }
+            }
+            else { return false; }
+        }
 
-        ////Expression1Hash -> , Postfix_expression Expression1Hash | ? 
-        //bool Expression1Hash()
-        //{
-        //    if (_token == eToken.COMMA)
-        //    {// ,
-        //        GetToken();
-        //        if (Postfix_expression())
-        //        {
-        //            if (Expression1Hash())
-        //            {
-        //                return true;
-        //            }
-        //            else { return false; }
-        //        }
-        //        else { return false; }
-        //    }
-        //    else { return true; }
-        //}
-
-
+        //Expression1Hash -> , Assignment_expression Expression1Hash | ? 
+        bool Expression1Hash(string exp1Hash_IPlace, string exp1Hash_ICode,
+                    out string exp1Hash_SPlace, out string exp1Hash_SCode)
+        {
+            exp1Hash_SPlace = "";
+            exp1Hash_SCode = "";
+            if (_token == eToken.COMMA)
+            {// ,
+                GetToken();
+                if (Assignment_expression(out string assExpressionPlace, out string assExpressionCode))
+                {
+                    var exp1Hash1_IPlace = assExpressionPlace;
+                    var exp1Hash1_ICode = assExpressionCode;
+                    if (Expression1Hash(exp1Hash1_IPlace, exp1Hash1_ICode,
+                        out string exp1Hash1_SPlace, out string exp1Hash1_SCode))
+                    {
+                        return true;
+                    }
+                    else { return false; }
+                }
+                else { return false; }
+            }
+            else 
+            {
+                exp1Hash_SPlace = exp1Hash_IPlace;
+                exp1Hash_SCode = exp1Hash_ICode;
+                return true; 
+            }
+        }
     }
 }

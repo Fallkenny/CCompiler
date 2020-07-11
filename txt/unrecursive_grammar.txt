@@ -29,10 +29,9 @@ Additive_expression -> Multiplicative_expression Additive_expression1Hash
 Additive_expression1Hash -> + Multiplicative_expression Additive_expression1Hash | - Multiplicative_expression Additive_expression1Hash | ? 
 Multiplicative_expression -> Unary_expression Multiplicative_expression1Hash 
 Multiplicative_expression1Hash -> * Unary_expression Multiplicative_expression1Hash | / Unary_expression Multiplicative_expression1Hash | % Unary_expression Multiplicative_expression1Hash | ? 
-Unary_expression -> ++ Unary_expression | -- Unary_expression | Unary_operator Unary_expression | Postfix_expression 
-Unary_operator -> + | - | ! 
-Postfix_expression -> Primary_expression Postfix_expression1Hash 
-Postfix_expression1Hash -> ++ Postfix_expression1Hash | -- Postfix_expression1Hash | ? 
+Unary_expression -> Unary_operator Unary_expression | Postfix_expression
+Unary_operator -> + | - | ! | ++ | --
+Postfix_expression -> Primary_expression ++ | Primary_expression -- | Primary_expression
 Primary_expression -> identifier | Constant | (Expression)
 Constant -> int_constant | float_constant 
 Assignment_operator -> = | *= | /= | %= | += | -= 

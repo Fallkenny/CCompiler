@@ -9,19 +9,21 @@ Type_specifier SETA int | float
 Init_declarator_list SETA Init_declarator | Init_declarator_list , Init_declarator
 Init_declarator SETA identifier = Assignment_expression | identifier
 Assignment_expression SETA Logical_or_expression Assignment_operator Assignment_expression | Logical_or_expression
+Assignment_operator SETA = | *= | /= | %= | += | -=
 Logical_or_expression SETA Logical_or_expression ii Logical_and_expression | Logical_and_expression
 Logical_and_expression SETA Logical_and_expression && Equality_expression | Equality_expression
-Equality_expression SETA Equality_expression == Relational_expression | Equality_expression != Relational_expression | Relational_expression
+Equality_expression SETA Equality_expression Equality_operator Relational_expression | Relational_expression
+Equality_operator SETA == | !=
 Relational_expression SETA Relational_expression Relational_operator Additive_expression | Additive_expression
 Relational_operator SETA > | < | >= | <=
 Additive_expression SETA Additive_expression + Multiplicative_expression | Additive_expression - Multiplicative_expression | Multiplicative_expression
 Multiplicative_expression SETA Multiplicative_expression * Unary_expression | Multiplicative_expression / Unary_expression | Multiplicative_expression % Unary_expression | Unary_expression
-Unary_expression SETA ++ Unary_expression | -- Unary_expression | Unary_operator Unary_expression | Postfix_expression
-Unary_operator SETA + | - | !
-Postfix_expression SETA Postfix_expression ++ | Postfix_expression -- | Primary_expression
+Unary_expression SETA Unary_operator Unary_expression | Postfix_expression
+Unary_operator SETA + | - | ! | ++ | --
+Postfix_expression SETA Primary_expression Postfix_operator | Primary_expression
+Postfix_operator SETA ++ | --
 Primary_expression SETA identifier | Constant | (Expression)
 Constant SETA int_constant | float_constant
-Assignment_operator SETA = | *= | /= | %= | += | -=
 Statement SETA Compound_statement | Expression_statement | If_statement | Iteration_statement | Jump_statement
 Expression_statement SETA ; | Expression ;
 Expression SETA  Expression , Assignment_expression | Assignment_expression

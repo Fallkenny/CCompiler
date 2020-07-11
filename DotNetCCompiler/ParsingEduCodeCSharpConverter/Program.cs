@@ -10,18 +10,25 @@ namespace ParsingEduCodeCSharpConverter
         {
             Console.WriteLine("Hello World!");
             //var filetext = File.OpenText(@"C:\GitHub\CCompiler\ParsingEduGenerated\descRecursivo.c");
-            var filetext = File.OpenText(@"C:\GitHub\CCompiler\tests\precode4.c");
+            var filetext = File.OpenText(@"C:\GitHub\CCompiler\tests\precode11.c");
             var line = filetext.ReadLine();
             var stringBuilder = new StringBuilder();
             //var sStart = "//Program -> Main_func ";
-            var sStart = "//Unary_expression -> Unary_operator Unary_expression | Postfix_expression ";
+            
             var sEnd = "// <*********** FIM DO ANALISADOR SINT";
 
-            while (!line.Contains(sStart))
+            while (!line.Contains("void getToken()"))
             {
                 line = filetext.ReadLine();
                 continue;
             }
+            while (!line.Contains("}"))
+            {
+                line = filetext.ReadLine();
+                continue;
+            }
+
+            line = filetext.ReadLine();
             while (!line.Contains(sEnd))
             {
                 stringBuilder.AppendLine(line);

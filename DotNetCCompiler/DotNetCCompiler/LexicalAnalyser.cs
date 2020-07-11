@@ -63,7 +63,8 @@ namespace DotNetCCompiler
         private void ReadLine()
         {
             _stringLine = InStreamReader.ReadLine();
-            if (_stringLine == null) EndOfFile = true;
+            if (_stringLine == null) 
+                EndOfFile = true;
             _stringLine += '\n';
             _currentLine++;
         }
@@ -95,6 +96,9 @@ namespace DotNetCCompiler
                 tokenResult.Write();
                 TokenResultList.Add(tokenResult);
             }
+            var finalTokenResult = new TokenResult(eToken.EOF, "", _currentLine, _currentColumn);
+            finalTokenResult.Write();
+            TokenResultList.Add(finalTokenResult);
             OutStreamWriter.Close();
         }
 
