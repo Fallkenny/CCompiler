@@ -1,4 +1,4 @@
-Program SETA Main_func
+Program SETA Main_func eof
 Main_func SETA int identifier ( ) Compound_statement
 Compound_statement SETA { } | { Block_item_list }
 Block_item_list SETA Block_item | Block_item_list Block_item

@@ -4,7 +4,7 @@ using System.Text;
 
 namespace DotNetCCompiler
 {
-    public class Syntatic_SemmanticAnalyser
+    public class Syntactic_SemmanticAnalyser
     {
 
         eToken _token;
@@ -15,7 +15,7 @@ namespace DotNetCCompiler
         private LinkedList<TokenResult> _linkedList;
         private LinkedList<TokenResult>.Enumerator _tokenEnumerator;
 
-        public Syntatic_SemmanticAnalyser(List<TokenResult> tokenResultList)
+        public Syntactic_SemmanticAnalyser(List<TokenResult> tokenResultList)
         {
             this._linkedList = new LinkedList<TokenResult>(tokenResultList);
             this._tokenEnumerator = _linkedList.GetEnumerator();
@@ -44,15 +44,19 @@ namespace DotNetCCompiler
             _currentToken = null;
             _token = eToken.EOF;
         }
-
-        //Program -> Main_func 
+        
+        //Program -> Main_func eof 
         bool Program(out string progCode)
         {
             progCode = "";
             if (Main_func(out string mainCode))
             {
-                progCode = mainCode;
-                return true;
+                if (_token == eToken.EOF)
+                {// eof                    
+                    progCode = mainCode;
+                    return true;
+                }
+                else { return false; }
             }
             else { return false; }
         }
@@ -88,10 +92,7 @@ namespace DotNetCCompiler
             }
             else { return false; }
         }
-
-
-
-
+                     
         //Declaration -> Type_specifier Init_declarator_list ; 
         bool Declaration( out string declCode)
         {
@@ -231,8 +232,7 @@ namespace DotNetCCompiler
             //}
             else { return false; }
         }
-
-
+        
         //Compound_statement -> { Compound_statement1Linha 
         bool Compound_statement(out string cpStmtCode)
         {
@@ -593,8 +593,7 @@ namespace DotNetCCompiler
             }
             else { return false; }
         }
-
-
+        
         //Relational_expression1Hash -> Relational_operator Additive_expression Relational_expression1Hash | ? 
         bool Relational_expression1Hash(
             string relExp1Hash_IPlace, string relExp1Hash_ICode,
@@ -922,8 +921,7 @@ namespace DotNetCCompiler
                 return true;
             }
         }
-
-
+        
         //Postfix_operator -> ++ | -- 
         bool Postfix_operator(out string postFixOperator)
         {
@@ -999,6 +997,7 @@ namespace DotNetCCompiler
             }
             else { return false; }
         }
+
         private string CreateCode(string operation, string destiny, string left, string right)
         {
             return $"{destiny}={ left }{operation}{right}\n";

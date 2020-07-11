@@ -16,7 +16,7 @@ namespace DotNetCCompiler
             lexical.Analyze();
             Console.WriteLine($"Verifique o arquivo de saida gerado em: {(LexicalAnalyzer.OutStreamWriter.BaseStream as FileStream).Name}");
 
-            var syntactic = new Syntatic_SemmanticAnalyser(lexical.TokenResultList);
+            var syntactic = new Syntactic_SemmanticAnalyser(lexical.TokenResultList);
             syntactic.Analyze();
         }
 

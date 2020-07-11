@@ -38,3 +38,4 @@ tkINT int
 tkFLOAT float
 tkCONTINUE continue
 tkBREAK break
+tkEOF eof

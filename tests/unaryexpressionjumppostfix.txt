@@ -1,2 +1,1 @@
-Program SETA Main_func
-Main_func SETA int identifier ( ) Compound_statement
+Program SETA Main_func eof
