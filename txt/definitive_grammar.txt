@@ -3,8 +3,7 @@ Main_func SETA int identifier ( ) Compound_statement
 Compound_statement SETA { } | { Block_item_list }
 Block_item_list SETA Block_item | Block_item_list Block_item
 Block_item SETA Declaration | Statement
-Declaration SETA Declaration_specifiers ; | Declaration_specifiers Init_declarator_list ;
-Declaration_specifiers SETA Type_specifier Declaration_specifiers | Type_specifier
+Declaration SETA Type_specifier Init_declarator_list ;
 Type_specifier SETA int | float
 Init_declarator_list SETA Init_declarator | Init_declarator_list , Init_declarator
 Init_declarator SETA identifier = Assignment_expression | identifier

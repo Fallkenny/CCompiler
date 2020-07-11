@@ -1,20 +1,19 @@
-[-]Program SETA Main_func
-[-]Main_func SETA int identifier ( ) Compound_statement
-[-]Compound_statement SETA { } | { Block_item_list }
-[-]Block_item_list SETA Block_item | Block_item_list Block_item
-[-]Block_item SETA Declaration | Statement
-[-]Declaration SETA Declaration_specifiers ; | Declaration_specifiers Init_declarator_list ;
-[-]Declaration_specifiers SETA Type_specifier Declaration_specifiers | Type_specifier
-[-]Type_specifier SETA int | float
-[-]Init_declarator_list SETA Init_declarator | Init_declarator_list , Init_declarator
-[-]Init_declarator SETA identifier = Assignment_expression | identifier
-[-]Statement SETA Compound_statement | Expression_statement | If_statement | Iteration_statement | Jump_statement
 [-]If_statement SETA if ( Expression ) Statement else Statement | if ( Expression ) Statement
 [-]Iteration_statement SETA While_statement | Do_while_statement | For_statement
 [-]While_statement SETA while ( Expression ) Statement
 [-]Do_while_statement SETA do Statement while ( Expression ) ;
 [-]For_statement SETA for ( Expression_statement Expression_statement ) Statement | for ( Expression_statement Expression_statement Expression ) Statement | for ( Declaration Expression_statement ) Statement | for ( Declaration Expression_statement Expression ) Statement
 [-]Jump_statement SETA continue ; | break ; 
+[-]Statement SETA Compound_statement | Expression_statement | If_statement | Iteration_statement | Jump_statement
+[x]Program SETA Main_func
+[x]Main_func SETA int identifier ( ) Compound_statement
+[x]Declaration SETA Type_specifier Init_declarator_list ;
+[x]Type_specifier SETA int | float
+[x]Init_declarator_list SETA Init_declarator | Init_declarator_list , Init_declarator
+[x]Init_declarator SETA identifier = Assignment_expression | identifier
+[x]Block_item_list SETA Block_item | Block_item_list Block_item
+[x]Block_item SETA Declaration | Statement
+[x]Compound_statement SETA { } | { Block_item_list }
 [x]Assignment_expression SETA Logical_or_expression Assignment_operator Assignment_expression | Logical_or_expression
 [x]Assignment_operator SETA = | *= | /= | %= | += | -=
 [x]Logical_or_expression SETA Logical_or_expression ii Logical_and_expression | Logical_and_expression

@@ -10,7 +10,7 @@ namespace DotNetCCompiler
         eToken _token;
         TokenResult _currentToken;
         int _tempIndex = 0;
-        public SymbolTable SymbolTable = new SymbolTable();
+        public SymbolTable _symbolTable = new SymbolTable();
 
         private LinkedList<TokenResult> _linkedList;
         private LinkedList<TokenResult>.Enumerator _tokenEnumerator;
@@ -29,7 +29,7 @@ namespace DotNetCCompiler
         public void Analyze()
         {
             GetToken();
-            var passed = Program();
+            var passed = Program(out string code);
         }
 
         void GetToken()
@@ -45,16 +45,281 @@ namespace DotNetCCompiler
             _token = eToken.EOF;
         }
 
-        bool Program()
+        //Program -> Main_func 
+        bool Program(out string progCode)
         {
-            if (Expression_statement(out string place, out string code))
+            progCode = "";
+            if (Main_func(out string mainCode))
             {
+                progCode = mainCode;
                 return true;
             }
-            else
-            {
-                return false;
+            else { return false; }
+        }
+
+        //Main_func -> bool identifier ( ) Compound_statement 
+        bool Main_func(out string mainFuncCode)
+        {
+            mainFuncCode = "";
+            if (_token == eToken.INT)
+            {// int
+                GetToken();
+                if (_token == eToken.IDENTIFIER)
+                {// identifier
+                    GetToken();
+                    if (_token == eToken.OPEN_PARENTHESIS)
+                    {// (
+                        GetToken();
+                        if (_token == eToken.CLOSE_PARENTHESIS)
+                        {// )
+                            GetToken();
+                            if (Compound_statement(out string cpStmtCode))
+                            {
+                                mainFuncCode = cpStmtCode;
+                                return true;
+                            }
+                            else { return false; }
+                        }
+                        else { return false; }
+                    }
+                    else { return false; }
+                }
+                else { return false; }
             }
+            else { return false; }
+        }
+
+
+
+
+        //Declaration -> Type_specifier Init_declarator_list ; 
+        bool Declaration( out string declCode)
+        {
+            declCode = "";
+            if (Type_specifier(out string varType))
+            {
+                if (Init_declarator_list(varType, out string initDeclLCode))
+                {
+                    if (_token == eToken.SEMICOLON)
+                    {// ;
+                        declCode = initDeclLCode;
+                        GetToken();
+                        return true;
+                    }
+                    else { return false; }
+                }
+                else { return false; }
+            }
+            else { return false; }
+        }
+
+        //Type_specifier -> bool | float 
+        bool Type_specifier(out string varType)
+        {
+            varType = "";
+            switch (_token)
+            {
+                case eToken.INT:
+                case eToken.FLOAT:
+                    varType = _currentToken.Label;
+                    GetToken();
+                    return true;
+                default:
+                    return false;
+            }
+        }
+
+        //Init_declarator_list -> Init_declarator Init_declarator_list1Hash 
+        bool Init_declarator_list(string varType, out string initDeclLCode)
+        {
+            initDeclLCode = "";
+            if (Init_declarator(varType, out string initDecl1Code))
+            {
+                if (Init_declarator_list1Hash(varType, out string initDeclL1HashCode))
+                {
+                    initDeclLCode = $"{initDecl1Code}{ initDeclL1HashCode}";
+                    return true;
+                }
+                else { return false; }
+            }
+            else { return false; }
+        }
+
+        //Init_declarator_list1Hash -> , Init_declarator Init_declarator_list1Hash | ? 
+        bool Init_declarator_list1Hash(string varType, out string initDeclL1HashCode)
+        {
+            initDeclL1HashCode = "";
+            if (_token == eToken.COMMA)
+            {// ,
+                GetToken();
+                if (Init_declarator(varType, out string initDeclCode))
+                {
+                    if (Init_declarator_list1Hash(varType, out string initDeclL1Hash1Code))
+                    {
+                        initDeclL1HashCode = $"{initDeclCode}{ initDeclL1Hash1Code}";
+                        return true;
+                    }
+                    else { return false; }
+                }
+                else { return false; }
+            }
+            else { return true; }
+        }
+
+        //Init_declarator -> identifier Init_declarator1Linha 
+        bool Init_declarator(string varType, out string initDeclCode)
+        {
+            initDeclCode = "";
+            if (_token == eToken.IDENTIFIER)
+            {// identifier
+
+                var initDecl1LPlace = _currentToken.Label;
+                _symbolTable.Add(_currentToken.Label, varType);
+                GetToken();
+                if (Init_declarator1Linha(initDecl1LPlace, out string initDecl1LCode))
+                {
+                    initDeclCode = initDecl1LCode;
+                    return true;
+                }
+                else { return false; }
+            }
+            else { return false; }
+        }
+
+        //Init_declarator1Linha -> = Assignment_expression | ? 
+        bool Init_declarator1Linha(string initDecl1LPlace, out string initDecl1LCode)
+        {
+            initDecl1LCode = "";
+            if (_token == eToken.ASSIGNENT)
+            {// =
+                GetToken();
+                if (Assignment_expression(out string assExpPlace, out string assExpCode))
+                {
+                    initDecl1LCode = $"{assExpCode}{initDecl1LPlace} = {assExpPlace}\n";
+                    return true;
+                }
+                else { return false; }
+            }
+            else { return true; }
+        }
+
+        //Statement -> Compound_statement | Expression_statement | If_statement | Iteration_statement | Jump_statement 
+        bool Statement(out string stmtCode)
+        {
+            stmtCode = "";
+            if (Compound_statement(out string cpStmtCode))
+            {
+                stmtCode = cpStmtCode;
+                return true;
+            }
+            else if (Expression_statement(out string expStmtCode))
+            {
+                stmtCode = expStmtCode;
+                return true;
+            }
+            //else if (If_statement())
+            //{
+            //    return true;
+            //}
+            //else if (Iteration_statement())
+            //{
+            //    return true;
+            //}
+            //else if (Jump_statement())
+            //{
+            //    return true;
+            //}
+            else { return false; }
+        }
+
+
+        //Compound_statement -> { Compound_statement1Linha 
+        bool Compound_statement(out string cpStmtCode)
+        {
+            cpStmtCode = "";
+            if (_token == eToken.OPEN_BRACE)
+            {// {
+                GetToken();
+                if (Compound_statement1Linha(out string cpStmt1Code))
+                {
+                    cpStmtCode = cpStmt1Code;
+                    return true;
+                }
+                else { return false; }
+            }
+            else { return false; }
+        }
+
+        //Compound_statement1Linha -> } | Block_item_list } 
+        bool Compound_statement1Linha(out string cpStmt1Code)
+        {
+            cpStmt1Code = "";
+            if (_token == eToken.CLOSE_BRACE)
+            {// }
+                GetToken();
+                return true;
+            }
+            else if (Block_item_list(out string blckItemLCode))
+            {
+                if (_token == eToken.CLOSE_BRACE)
+                {// }
+                    cpStmt1Code = blckItemLCode;
+                    GetToken();
+                    return true;
+                }
+                else { return false; }
+            }
+            else { return false; }
+        }
+
+        //Block_item_list -> Block_item Block_item_list1Hash 
+        bool Block_item_list(out string blckItemLCode)
+        {
+            blckItemLCode = "";
+            if (Block_item(out string blckItemCode))
+            {
+                if (Block_item_list1Hash(out string blckItemL1HashCode))
+                {
+                    blckItemLCode = $"{ blckItemCode }{blckItemL1HashCode}";
+                    return true;
+                }
+                else { return false; }
+            }
+            else { return false; }
+        }
+
+        //Block_item_list1Hash -> Block_item Block_item_list1Hash | ? 
+        bool Block_item_list1Hash(out string blckItemL1HashCode)
+        {
+            blckItemL1HashCode = "";
+            if (Block_item(out string blckItemCode))
+            {
+                if (Block_item_list1Hash( out string blckItemL1Hash1Code))
+                {
+                    blckItemL1HashCode = $"{ blckItemCode }{blckItemL1Hash1Code}";
+                    return true;
+                }
+                else { return false; }
+            }
+            else { return true; }
+        }
+
+        //Block_item -> Declaration | Statement 
+        bool Block_item(out string blckItemCode)
+        {
+            blckItemCode = "";
+
+            if (Declaration(out string declCode))
+            {
+                blckItemCode = declCode;
+                return true;
+            }
+            else if (Statement(out string stmtCode))
+            {
+                blckItemCode = stmtCode;
+                return true;
+            }
+            else { return false; }
         }
 
         //Assignment_expression -> Logical_or_expression Assignment_expression1Linha 
@@ -650,11 +915,11 @@ namespace DotNetCCompiler
                                         CreateCode(postFixOperator, postFixExp1_IPlace, postFixExp1_IPlace, "1");
                 return true;
             }
-            else 
+            else
             {
                 postFixExp1Hash_SPlace = postFixExp1_IPlace;
                 postFixExp1Hash_SCode = postFixExp1_ICode;
-                return true; 
+                return true;
             }
         }
 
@@ -745,9 +1010,8 @@ namespace DotNetCCompiler
         }
 
         //Expression_statement -> ; | Expression ; 
-        bool Expression_statement(out string expStmtPlace, out string expStmtCode)
+        bool Expression_statement(out string expStmtCode)
         {
-            expStmtPlace = "";
             expStmtCode = "";
             if (_token == eToken.SEMICOLON)
             {// ;
@@ -755,8 +1019,7 @@ namespace DotNetCCompiler
                 return true;
             }
             else if (Expression(out string expPlace, out string expCode))
-            {
-                expStmtPlace = expPlace;
+            {         
                 expStmtCode = expCode;
                 if (_token == eToken.SEMICOLON)
                 {// ;
@@ -811,11 +1074,11 @@ namespace DotNetCCompiler
                 }
                 else { return false; }
             }
-            else 
+            else
             {
                 exp1Hash_SPlace = exp1Hash_IPlace;
                 exp1Hash_SCode = exp1Hash_ICode;
-                return true; 
+                return true;
             }
         }
     }
