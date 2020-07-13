@@ -10,7 +10,7 @@ namespace ParsingEduCodeCSharpConverter
         {
             Console.WriteLine("Hello World!");
             //var filetext = File.OpenText(@"C:\GitHub\CCompiler\ParsingEduGenerated\descRecursivo.c");
-            var filetext = File.OpenText(@"C:\GitHub\CCompiler\tests\precode17.c");
+            var filetext = File.OpenText(@"C:\GitHub\CCompiler\tests\precode22.c");
             var line = filetext.ReadLine();
             var stringBuilder = new StringBuilder();
             //var sStart = "//Program -> Main_func ";

@@ -1,8 +1,12 @@
 int main()
 {
-	int falk = 4, kenny =0;
-	int winner;
-	winner = falk;
-	workingHours = 8000;
+	int falk2 = 2;
+	for(int falk=0;falk<10;)
+	{
+		continue;
+		falk2++;
+		break;
+	}
+	
 }
 

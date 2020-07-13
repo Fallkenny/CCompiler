@@ -1,10 +1,10 @@
-[-]If_statement SETA if ( Expression ) Statement else Statement | if ( Expression ) Statement
-[-]Iteration_statement SETA While_statement | Do_while_statement | For_statement
-[-]While_statement SETA while ( Expression ) Statement
-[-]Do_while_statement SETA do Statement while ( Expression ) ;
-[-]For_statement SETA for ( Expression_statement Expression_statement ) Statement | for ( Expression_statement Expression_statement Expression ) Statement | for ( Declaration Expression_statement ) Statement | for ( Declaration Expression_statement Expression ) Statement
-[-]Jump_statement SETA continue ; | break ; 
-[-]Statement SETA Compound_statement | Expression_statement | If_statement | Iteration_statement | Jump_statement
+[x]Jump_statement SETA continue ; | break ; 
+[x]Statement SETA Compound_statement | Expression_statement | If_statement | Iteration_statement | Jump_statement
+[x]For_statement SETA for ( Expression_statement Expression_statement ) Statement | for ( Expression_statement Expression_statement Expression ) Statement | for ( Declaration Expression_statement ) Statement | for ( Declaration Expression_statement Expression ) Statement
+[x]Iteration_statement SETA While_statement | Do_while_statement | For_statement
+[x]Do_while_statement SETA do Statement while ( Expression ) ;
+[x]While_statement SETA while ( Expression ) Statement
+[x]If_statement SETA if ( Expression ) Statement else Statement | if ( Expression ) Statement
 [x]Program SETA Main_func
 [x]Main_func SETA int identifier ( ) Compound_statement
 [x]Declaration SETA Type_specifier Init_declarator_list ;

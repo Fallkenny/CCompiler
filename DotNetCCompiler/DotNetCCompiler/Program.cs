@@ -84,7 +84,7 @@ namespace DotNetCCompiler
             {
                 theEvilWasDefeated = 1;
             }
-            while (theEvilWasDefeated!=0)
+            while (theEvilWasDefeated != 0)
             {
                 break;
             }

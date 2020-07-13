@@ -6,12 +6,14 @@ namespace DotNetCCompiler
 {
     public class Syntactic_SemmanticAnalyser
     {
-
         eToken _token;
         TokenResult _currentToken;
         int _tempIndex = 0;
-        public SymbolTable _symbolTable = new SymbolTable();
+        //public SymbolTable _symbolTable = new SymbolTable();
+        public Stack<SymbolTable> _symbolContexts = new Stack<SymbolTable>();
 
+        public Stack<string> _continueLabelStack = new Stack<string>();
+        public Stack<string> _breakLabelStack = new Stack<string>();
         private LinkedList<TokenResult> _linkedList;
         private LinkedList<TokenResult>.Enumerator _tokenEnumerator;
 
@@ -24,6 +26,11 @@ namespace DotNetCCompiler
         private string CreateTempVar()
         {
             return string.Format($"T{_tempIndex++.ToString("D3")}");
+        }
+
+        private string CreateLabel()
+        {
+            return string.Format($"LB{_tempIndex++.ToString("D3")}");
         }
 
         public void Analyze()
@@ -44,7 +51,7 @@ namespace DotNetCCompiler
             _currentToken = null;
             _token = eToken.EOF;
         }
-        
+
         //Program -> Main_func eof 
         bool Program(out string progCode)
         {
@@ -92,9 +99,369 @@ namespace DotNetCCompiler
             }
             else { return false; }
         }
-                     
+
+        //Iteration_statement -> While_statement | Do_while_statement | For_statement 
+        bool Iteration_statement(out string iterStmtCode)
+        {
+            iterStmtCode = "";
+            if (While_statement(out string whileCode))
+            {
+                iterStmtCode = whileCode;
+                return true;
+            }
+            else if (Do_while_statement(out string doWhileCode))
+            {
+                iterStmtCode = doWhileCode;
+                return true;
+            }
+            else if (For_statement(out string forCode))
+            {
+                iterStmtCode = forCode;
+                return true;
+            }
+            else { return false; }
+        }
+
+        //Jump_statement -> continue ; | break ; 
+        bool Jump_statement(out string jmpStmtCode)
+        {
+            jmpStmtCode = "";
+            if (_token == eToken.CONTINUE)
+            {// continue
+                GetToken();
+                if (_token == eToken.SEMICOLON)
+                {// ;
+                    if (!_continueLabelStack.TryPeek(out string lblContinue))
+                        throw new Exception("Comandos continue só podem ser usados dentro de loops.");
+                    jmpStmtCode = $"goto {lblContinue }\n";
+                    GetToken();
+                    return true;
+                }
+                else { return false; }
+            }
+            else if (_token == eToken.BREAK)
+            {// break
+                GetToken();
+                if (_token == eToken.SEMICOLON)
+                {// ;
+                    if (!_breakLabelStack.TryPeek(out string lblBreak))
+                        throw new Exception("Comandos break só podem ser usados dentro de loops.");
+                    jmpStmtCode = $"goto {lblBreak}\n";
+                    GetToken();
+                    return true;
+                }
+                else { return false; }
+            }
+            else { return false; }
+        }
+
+        //For_statement -> for ( For_statement2Linha 
+        bool For_statement(out string forCode)
+        {
+            forCode = "";
+            if (_token == eToken.FOR)
+            {// for
+                GetToken();
+                if (_token == eToken.OPEN_PARENTHESIS)
+                {// (
+                    GetToken();
+                    if (For_statement2Linha(out string forStmt2LCode))
+                    {
+                        forCode = forStmt2LCode;
+                        return true;
+                    }
+                    else { return false; }
+                }
+                else { return false; }
+            }
+            else { return false; }
+        }
+
+        //For_statement2Linha -> Expression_statement Expression_statement For_statement1Linha | Declaration Expression_statement For_statement3Linha 
+        bool For_statement2Linha(out string forStmt2LCode)
+        {
+            forStmt2LCode = "";
+            var lblForIterationStart = CreateLabel();
+            var lblForEnd = CreateLabel();
+            if (Expression_statement(out string expStmt1Code))
+            {
+                if (Expression_statement(out string expStmt2Place, out string expStmt2Code))
+                {
+                    _continueLabelStack.Push(lblForIterationStart);
+                    _breakLabelStack.Push(lblForEnd);
+                    if (For_statement1Linha(out string forStmt1LCode))
+                    {
+                        forStmt2LCode = $"{expStmt1Code}" +
+                                        $"{lblForIterationStart}:\n" +
+                                        $"{expStmt2Code}" +
+                                        $"if {expStmt2Place} == 0 goto {lblForEnd}\n" +
+                                        $"{forStmt1LCode}" +
+                                        $"goto {lblForIterationStart}\n" +
+                                        $"{lblForEnd}:\n";
+                        _breakLabelStack.Pop();
+                        _continueLabelStack.Pop();
+
+                        return true;
+                    }
+                    else 
+                    {
+                        _breakLabelStack.Pop();
+                        _continueLabelStack.Pop();
+                        return false; 
+                    }
+                }
+                else { return false; }
+            }
+            else if (Declaration(out string declCode))
+            {
+                if (Expression_statement(out string expStmtPlace, out string expStmtCode))
+                {
+                    _continueLabelStack.Push(lblForIterationStart);
+                    _breakLabelStack.Push(lblForEnd);
+                    if (For_statement3Linha(out string forStmt3LCode))
+                    {
+                        forStmt2LCode = $"{declCode}" +
+                                        $"{lblForIterationStart}:\n" +
+                                        $"{expStmtCode}" +
+                                        $"if {expStmtPlace} == 0 goto {lblForEnd}\n" +
+                                        $"{forStmt3LCode}" +
+                                        $"goto {lblForIterationStart}\n" +
+                                        $"{lblForEnd}:\n";
+                        _breakLabelStack.Pop();
+                        _continueLabelStack.Pop();
+                        return true;
+                    }
+                    else 
+                    {
+                        _breakLabelStack.Pop();
+                        _continueLabelStack.Pop();
+                        return false; 
+                    }
+                }
+                else { return false; }
+            }
+            else { return false; }
+        }
+
+        //For_statement3Linha -> ) Statement | Expression ) Statement 
+        bool For_statement3Linha(out string forStmt3LCode)
+        {
+            forStmt3LCode = "";
+            if (_token == eToken.CLOSE_PARENTHESIS)
+            {// )
+                GetToken();
+                if (Statement(out string stmtCode))
+                {
+                    forStmt3LCode = stmtCode;
+                    return true;
+                }
+                else { return false; }
+            }
+            else if (Expression(out string expPlace, out string expCode))
+            {
+                if (_token == eToken.CLOSE_PARENTHESIS)
+                {// )
+                    GetToken();
+                    if (Statement(out string stmtCode))
+                    {
+                        forStmt3LCode = $"{expCode}{stmtCode}";
+                        return true;
+                    }
+                    else { return false; }
+                }
+                else { return false; }
+            }
+            else { return false; }
+        }
+
+        //For_statement1Linha -> ) Statement | Expression ) Statement 
+        bool For_statement1Linha(out string forStmt1LCode)
+        {
+            forStmt1LCode = "";
+            if (_token == eToken.CLOSE_PARENTHESIS)
+            {// )
+                GetToken();
+                if (Statement(out string stmtCode))
+                {
+                    forStmt1LCode = stmtCode;
+                    return true;
+                }
+                else { return false; }
+            }
+            else if (Expression(out string expPlace, out string expCode))
+            {
+                if (_token == eToken.CLOSE_PARENTHESIS)
+                {// )
+                    GetToken();
+                    if (Statement(out string stmtCode))
+                    {
+                        forStmt1LCode = $"{expCode}{stmtCode}";
+                        return true;
+                    }
+                    else { return false; }
+                }
+                else { return false; }
+            }
+            else { return false; }
+        }
+
+        //Do_while_statement -> do Statement while ( Expression ) ; 
+        bool Do_while_statement(out string doWhileCode)
+        {
+            doWhileCode = "";
+            var lblDo = CreateLabel();
+            var lblWhiletest = CreateLabel();
+            var lblEnd = CreateLabel();
+            if (_token == eToken.DO)
+            {// do
+                GetToken();
+                if (Statement(out string stmtCode))
+                {
+                    if (_token == eToken.WHILE)
+                    {// while
+                        GetToken();
+                        if (_token == eToken.OPEN_PARENTHESIS)
+                        {// (
+                            GetToken();
+                            if (Expression(out string expPlace, out string expCode))
+                            {
+                                if (_token == eToken.CLOSE_PARENTHESIS)
+                                {// )
+                                    GetToken();
+                                    if (_token == eToken.SEMICOLON)
+                                    {// ;
+                                        _breakLabelStack.Push(lblEnd);
+                                        _continueLabelStack.Push(lblWhiletest);
+                                        doWhileCode = $"{lblDo}:\n" +
+                                                      $"{stmtCode}" +
+                                                      $"{lblWhiletest}:\n" +
+                                                      $"{expCode}" +
+                                                      $"if {expPlace} == 1 goto {lblDo}\n" +
+                                                      $"{lblEnd}:";
+                                        _breakLabelStack.Pop();
+                                        _continueLabelStack.Pop();
+                                        GetToken();
+                                        return true;
+                                    }
+                                    else { return false; }
+                                }
+                                else { return false; }
+                            }
+                            else { return false; }
+                        }
+                        else { return false; }
+                    }
+                    else { return false; }
+                }
+                else { return false; }
+            }
+            else { return false; }
+        }
+
+        //While_statement -> while ( Expression ) Statement 
+        bool While_statement(out string whileCode)
+        {
+            whileCode = "";
+            var lblWhile = CreateLabel();
+            var lblEnd = CreateLabel();
+            if (_token == eToken.WHILE)
+            {// while
+                GetToken();
+                if (_token == eToken.OPEN_PARENTHESIS)
+                {// (
+                    GetToken();
+                    if (Expression(out string expPlace, out string expCode))
+                    {
+                        if (_token == eToken.CLOSE_PARENTHESIS)
+                        {// )
+                            GetToken();
+                            if (Statement(out string stmtCode))
+                            {
+                                _breakLabelStack.Push(lblEnd);
+                                _continueLabelStack.Push(lblWhile);
+                                whileCode = $"{lblWhile}:\n" +
+                                            $"{expCode}" +
+                                            $"if {expPlace} == 0 goto {lblEnd}\n" +
+                                            $"{stmtCode}" +
+                                            $"goto {lblWhile}\n" +
+                                            $"{lblEnd}:\n";
+                                _breakLabelStack.Pop();
+                                _continueLabelStack.Pop();
+                                return true;
+                            }
+                            else { return false; }
+                        }
+                        else { return false; }
+                    }
+                    else { return false; }
+                }
+                else { return false; }
+            }
+            else { return false; }
+        }
+
+        //If_statement -> if ( Expression ) Statement If_statement1Linha 
+        bool If_statement(out string ifCode)
+        {
+            ifCode = "";
+            var lblEnd = CreateLabel();
+            var lblElse = CreateLabel();
+            if (_token == eToken.IF)
+            {// if
+                GetToken();
+                if (_token == eToken.OPEN_PARENTHESIS)
+                {// (
+                    GetToken();
+                    if (Expression(out string exprPlace, out string exprCode))
+                    {
+                        if (_token == eToken.CLOSE_PARENTHESIS)
+                        {// )
+                            GetToken();
+                            if (Statement(out string stmtCode))
+                            {
+                                if (If_statement1Linha(out string ifStmt1Code))
+                                {
+                                    ifCode = $"{exprCode}" +
+                                            $"if {exprPlace} == 0 goto {lblElse}\n" +
+                                            $"{stmtCode} " +
+                                            $"goto {lblEnd}\n" +
+                                            $"{lblElse}:\n" +
+                                            $"{ifStmt1Code}" +
+                                            $"{lblEnd}:\n";
+                                    return true;
+                                }
+                                else { return false; }
+                            }
+                            else { return false; }
+                        }
+                        else { return false; }
+                    }
+                    else { return false; }
+                }
+                else { return false; }
+            }
+            else { return false; }
+        }
+
+        //If_statement1Linha -> else Statement | ? 
+        bool If_statement1Linha(out string ifStmt1Code)
+        {
+            ifStmt1Code = "";
+            if (_token == eToken.ELSE)
+            {// else
+                GetToken();
+                if (Statement(out string stmtCode))
+                {
+                    ifStmt1Code = stmtCode;
+                    return true;
+                }
+                else { return false; }
+            }
+            else { return true; }
+        }
+
         //Declaration -> Type_specifier Init_declarator_list ; 
-        bool Declaration( out string declCode)
+        bool Declaration(out string declCode)
         {
             declCode = "";
             if (Type_specifier(out string varType))
@@ -218,21 +585,24 @@ namespace DotNetCCompiler
                 stmtCode = expStmtCode;
                 return true;
             }
-            //else if (If_statement())
-            //{
-            //    return true;
-            //}
-            //else if (Iteration_statement())
-            //{
-            //    return true;
-            //}
-            //else if (Jump_statement())
-            //{
-            //    return true;
-            //}
+            else if (If_statement(out string ifStmtCode))
+            {
+                stmtCode = ifStmtCode;
+                return true;
+            }
+            else if (Iteration_statement(out string iterStmtCode))
+            {
+                stmtCode = iterStmtCode;
+                return true;
+            }
+            else if (Jump_statement(out string jmpStmtCode))
+            {
+                stmtCode = jmpStmtCode;
+                return true;
+            }
             else { return false; }
         }
-        
+
         //Compound_statement -> { Compound_statement1Linha 
         bool Compound_statement(out string cpStmtCode)
         {
@@ -294,7 +664,7 @@ namespace DotNetCCompiler
             blckItemL1HashCode = "";
             if (Block_item(out string blckItemCode))
             {
-                if (Block_item_list1Hash( out string blckItemL1Hash1Code))
+                if (Block_item_list1Hash(out string blckItemL1Hash1Code))
                 {
                     blckItemL1HashCode = $"{ blckItemCode }{blckItemL1Hash1Code}";
                     return true;
@@ -593,7 +963,7 @@ namespace DotNetCCompiler
             }
             else { return false; }
         }
-        
+
         //Relational_expression1Hash -> Relational_operator Additive_expression Relational_expression1Hash | ? 
         bool Relational_expression1Hash(
             string relExp1Hash_IPlace, string relExp1Hash_ICode,
@@ -921,7 +1291,7 @@ namespace DotNetCCompiler
                 return true;
             }
         }
-        
+
         //Postfix_operator -> ++ | -- 
         bool Postfix_operator(out string postFixOperator)
         {
@@ -958,20 +1328,20 @@ namespace DotNetCCompiler
             {
                 return true;
             }
-            //else if (_token == eToken.OPEN_PARENTHESIS)
-            //{// (
-            //    GetToken();
-            //    if (Expression())
-            //    {
-            //        if (_token == eToken.CLOSE_PARENTHESIS)
-            //        {// )
-            //            GetToken();
-            //            return true;
-            //        }
-            //        else { return false; }
-            //    }
-            //    else { return false; }
-            //}
+            else if (_token == eToken.OPEN_PARENTHESIS)
+            {// (
+                GetToken();
+                if (Expression(out primExpPlace, out primExpCode))
+                {
+                    if (_token == eToken.CLOSE_PARENTHESIS)
+                    {// )
+                        GetToken();
+                        return true;
+                    }
+                    else { return false; }
+                }
+                else { return false; }
+            }
             else { return false; }
         }
 
@@ -1009,17 +1379,21 @@ namespace DotNetCCompiler
         }
 
         //Expression_statement -> ; | Expression ; 
-        bool Expression_statement(out string expStmtCode)
+
+        bool Expression_statement(out string expStmtCode) => Expression_statement(out string _, out expStmtCode);
+        bool Expression_statement(out string expStmtPlace, out string expStmtCode)
         {
             expStmtCode = "";
+            expStmtPlace = "";
             if (_token == eToken.SEMICOLON)
             {// ;
                 GetToken();
                 return true;
             }
             else if (Expression(out string expPlace, out string expCode))
-            {         
+            {
                 expStmtCode = expCode;
+                expStmtPlace = expPlace;
                 if (_token == eToken.SEMICOLON)
                 {// ;
                     GetToken();
