@@ -9,15 +9,21 @@ namespace DotNetCCompiler
         {
             Console.WriteLine("Hello World!");
             //test();
-            var testFile = @"C:\GitHub\CCompiler\code\testinprogress.c";
-            Console.WriteLine($"Iniciando análise sintática: {testFile}");
+            var testFile = @"C:\GitHub\CCompiler\code\testfile.c";
+            Console.WriteLine($"Iniciando análise léxica: {testFile}");
             var fileStream = File.OpenRead(testFile);
             var lexical = new LexicalAnalyzer(fileStream);
             lexical.Analyze();
             Console.WriteLine($"Verifique o arquivo de saida gerado em: {(LexicalAnalyzer.OutStreamWriter.BaseStream as FileStream).Name}");
 
+            Console.WriteLine($"Iniciando análise sintática + semântica + compilação: {testFile}");
             var syntactic = new Syntactic_SemmanticAnalyser(lexical.TokenResultList);
-            syntactic.Analyze();
+            if (syntactic.Compile(out string _3adressCode)) 
+            {
+                var copiledPath = Path.Combine(Path.GetDirectoryName(testFile),$"compiled_{Path.GetFileName(testFile)}");
+                var file = File.CreateText(copiledPath);
+                file.Write(_3adressCode);
+            }
         }
 
         static void test()

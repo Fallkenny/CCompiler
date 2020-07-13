@@ -11,12 +11,18 @@ namespace DotNetCCompiler
             get
             {
                 if (Symbols.ContainsKey(id))
-                    return Symbols[id];
+                    return Symbols[id];                
                 if (!(ParentContext is null))
                     return ParentContext[id];
+                if (RuntimeVariables.Symbols.ContainsKey(id))
+                    return RuntimeVariables.Symbols[id];
                 throw new Exception($"Variavel {id} não está declarada nesse escopo");
             }
         }
+
+        public static SymbolTable TemporaryVariables { get; set; } = new SymbolTable();
+
+        public SymbolTable RuntimeVariables => TemporaryVariables;
 
         public Dictionary<string, Symbol> Symbols { get; set; } = new Dictionary<string, Symbol>();
         public SymbolTable ParentContext { get; set; } = null;
@@ -32,10 +38,11 @@ namespace DotNetCCompiler
 
         internal void Add(string id, string type)
         {
-            if(this.Contains(id))
+            if(this.Symbols.ContainsKey(id))
             {
                 throw new Exception($"A variável {id} já existe");
             }
+            this.Symbols.Add(id, new Symbol { Name = id, VarType = type });
         }
     }
 }

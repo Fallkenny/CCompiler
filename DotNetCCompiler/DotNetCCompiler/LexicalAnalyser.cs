@@ -403,7 +403,7 @@ namespace DotNetCCompiler
                         _state = State.Initial;
                         BackSpaceUndoGetChar();
                         SaveContextGetCharLexicalErase(out int line, out int column, out string lexical);
-
+                        _hasPoint = false;
                         return int.TryParse(lexical, out _) ? new TokenResult(eToken.INTEGER_CONSTANT, lexical, line, column) :
                             float.TryParse(lexical, out _) ? new TokenResult(eToken.FLOATING_POINT_CONSTANT, lexical, line, column) :
                             new TokenResult(eToken.LEXICAL_ERROR, lexical, line, column);

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 
 namespace DotNetCCompiler
@@ -8,8 +9,8 @@ namespace DotNetCCompiler
     {
         eToken _token;
         TokenResult _currentToken;
-        int _tempIndex = 0;
-        //public SymbolTable _symbolTable = new SymbolTable();
+        int _tempVarIndex = 0;
+        int _tempLabelIndex = 0;
         public Stack<SymbolTable> _symbolContexts = new Stack<SymbolTable>();
 
         public Stack<string> _continueLabelStack = new Stack<string>();
@@ -25,18 +26,27 @@ namespace DotNetCCompiler
 
         private string CreateTempVar()
         {
-            return string.Format($"T{_tempIndex++.ToString("D3")}");
+            return string.Format($"T{_tempVarIndex++.ToString("D3")}");
         }
 
         private string CreateLabel()
         {
-            return string.Format($"LB{_tempIndex++.ToString("D3")}");
+            return string.Format($"LB{_tempLabelIndex++.ToString("D3")}");
         }
 
-        public void Analyze()
+        public bool Compile(out string _3adressCode)
         {
-            GetToken();
-            var passed = Program(out string code);
+            _3adressCode = "";
+            try
+            {
+                GetToken();
+                return Program(out _3adressCode);
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine($"{e.Message}\nToken atual= {_currentToken.Label}({_token.ToString()})\nLinha:{_currentToken.Line}\n{_currentToken.Column}");
+                return false;
+            }
         }
 
         void GetToken()
@@ -203,11 +213,11 @@ namespace DotNetCCompiler
 
                         return true;
                     }
-                    else 
+                    else
                     {
                         _breakLabelStack.Pop();
                         _continueLabelStack.Pop();
-                        return false; 
+                        return false;
                     }
                 }
                 else { return false; }
@@ -231,11 +241,11 @@ namespace DotNetCCompiler
                         _continueLabelStack.Pop();
                         return true;
                     }
-                    else 
+                    else
                     {
                         _breakLabelStack.Pop();
                         _continueLabelStack.Pop();
-                        return false; 
+                        return false;
                     }
                 }
                 else { return false; }
@@ -542,7 +552,8 @@ namespace DotNetCCompiler
             {// identifier
 
                 var initDecl1LPlace = _currentToken.Label;
-                _symbolTable.Add(_currentToken.Label, varType);
+                _symbolContexts.Peek().Add(_currentToken.Label, varType);
+
                 GetToken();
                 if (Init_declarator1Linha(initDecl1LPlace, out string initDecl1LCode))
                 {
@@ -563,6 +574,7 @@ namespace DotNetCCompiler
                 GetToken();
                 if (Assignment_expression(out string assExpPlace, out string assExpCode))
                 {
+                    _symbolContexts.Peek()[initDecl1LPlace].Initialized = true;
                     initDecl1LCode = $"{assExpCode}{initDecl1LPlace} = {assExpPlace}\n";
                     return true;
                 }
@@ -609,6 +621,14 @@ namespace DotNetCCompiler
             cpStmtCode = "";
             if (_token == eToken.OPEN_BRACE)
             {// {
+                SymbolTable symbolTable = null;
+                if (!_symbolContexts.TryPeek(out symbolTable))
+                {
+                    _symbolContexts.Push(new SymbolTable { });
+                }
+                else
+                    _symbolContexts.Push(new SymbolTable { ParentContext = symbolTable });
+
                 GetToken();
                 if (Compound_statement1Linha(out string cpStmt1Code))
                 {
@@ -626,6 +646,7 @@ namespace DotNetCCompiler
             cpStmt1Code = "";
             if (_token == eToken.CLOSE_BRACE)
             {// }
+                _symbolContexts.Pop();
                 GetToken();
                 return true;
             }
@@ -633,6 +654,7 @@ namespace DotNetCCompiler
             {
                 if (_token == eToken.CLOSE_BRACE)
                 {// }
+                    _symbolContexts.Pop();
                     cpStmt1Code = blckItemLCode;
                     GetToken();
                     return true;
@@ -792,6 +814,7 @@ namespace DotNetCCompiler
                 if (Logical_and_expression(out string logicAndExpPlace, out string logicAndExpCode))
                 {
                     var logicOrExp1Hash1_IPlace = CreateTempVar();
+                    _symbolContexts.Peek().RuntimeVariables.Add(logicOrExp1Hash1_IPlace, "int");
                     var logicOrExp1Hash1_ICode = logicOrExp1Hash_ICode + logicAndExpCode + CreateCode("&&", logicOrExp1Hash1_IPlace, logicOrExp1Hash_IPlace, logicAndExpPlace);
 
                     if (Logical_or_expression1Hash(logicOrExp1Hash1_IPlace, logicOrExp1Hash1_ICode,
@@ -849,6 +872,7 @@ namespace DotNetCCompiler
                 if (Equality_expression(out string eqExpPlace, out string eqExpCode))
                 {
                     var logicAndExp1Hash1_IPlace = CreateTempVar();
+                    _symbolContexts.Peek().RuntimeVariables.Add(logicAndExp1Hash1_IPlace, "int");
                     var logicAndExp1Hash1_ICode = logicAndExp1Hash_ICode + eqExpCode + CreateCode("&&", logicAndExp1Hash1_IPlace, logicAndExp1Hash_IPlace, eqExpPlace);
 
                     if (Logical_and_expression1Hash(logicAndExp1Hash1_IPlace, logicAndExp1Hash1_ICode,
@@ -905,6 +929,7 @@ namespace DotNetCCompiler
                 if (Relational_expression(out string relExpPlace, out string relExpCode))
                 {
                     var eqExp1Hash1_IPlace = CreateTempVar();
+                    _symbolContexts.Peek().RuntimeVariables.Add(eqExp1Hash1_IPlace, "int");
                     var eqExp1Hash1_ICode = eqExp1Hash_ICode + relExpCode + CreateCode(eqOperator, eqExp1Hash1_IPlace, eqExp1Hash_IPlace, relExpPlace);
 
                     if (Equality_expression1Hash(eqExp1Hash1_IPlace, eqExp1Hash1_ICode,
@@ -976,6 +1001,7 @@ namespace DotNetCCompiler
                 if (Additive_expression(out string addExpPlace, out string addExpCode))
                 {
                     var relExp1Hash1_IPlace = CreateTempVar();
+                    _symbolContexts.Peek().RuntimeVariables.Add(relExp1Hash1_IPlace, "int");
                     var relExp1Hash1_ICode = relExp1Hash_ICode + addExpCode + CreateCode(relOperator, relExp1Hash1_IPlace, relExp1Hash_IPlace, addExpPlace);
 
                     if (Relational_expression1Hash(relExp1Hash1_IPlace, relExp1Hash1_ICode,
@@ -1052,6 +1078,7 @@ namespace DotNetCCompiler
                 if (Multiplicative_expression(out string mulExpPlace, out string mulExpCode))
                 {
                     var addExp1Hash1_IPlace = CreateTempVar();
+                    _symbolContexts.Peek().RuntimeVariables.Add(addExp1Hash1_IPlace, this.GetResultVariableType(addExp1Hash_IPlace, mulExpPlace));
                     var addExp1Hash1_ICode = addExp1Hash_ICode + mulExpCode + CreateCode("+", addExp1Hash1_IPlace, addExp1Hash_IPlace, mulExpPlace);
 
                     if (Additive_expression1Hash(addExp1Hash1_IPlace, addExp1Hash1_ICode,
@@ -1072,6 +1099,7 @@ namespace DotNetCCompiler
                 if (Multiplicative_expression(out string mulExpPlace, out string mulExpCode))
                 {
                     var addExp1Hash1_IPlace = CreateTempVar();
+                    _symbolContexts.Peek().RuntimeVariables.Add(addExp1Hash1_IPlace, this.GetResultVariableType(addExp1Hash_IPlace, mulExpPlace));
                     var addExp1Hash1_ICode = addExp1Hash_ICode + mulExpCode + CreateCode("-", addExp1Hash1_IPlace, addExp1Hash_IPlace, mulExpPlace);
                     if (Additive_expression1Hash(addExp1Hash1_IPlace, addExp1Hash1_ICode,
                         out string addExp1HashPlace, out string addExp1HashCode))
@@ -1129,6 +1157,7 @@ namespace DotNetCCompiler
                 if (Unary_expression(out string unExpPlace, out string unExpCode))
                 {
                     var mulExp1Hash1_IPlace = CreateTempVar();
+                    _symbolContexts.Peek().RuntimeVariables.Add(mulExp1Hash1_IPlace, this.GetResultVariableType(mulExp1Hash_IPlace, unExpPlace));
                     var mulExp1Hash1_ICode = mulExp1Hash_ICode + unExpCode + CreateCode("*", mulExp1Hash1_IPlace, mulExp1Hash_IPlace, unExpPlace);
                     if (Multiplicative_expression1Hash(mulExp1Hash1_IPlace, mulExp1Hash1_ICode,
                         out string mulExp1HashPlace, out string mulExp1HashCode))
@@ -1147,6 +1176,7 @@ namespace DotNetCCompiler
                 if (Unary_expression(out string unExpPlace, out string unExpCode))
                 {
                     var mulExp1Hash1_IPlace = CreateTempVar();
+                    _symbolContexts.Peek().RuntimeVariables.Add(mulExp1Hash1_IPlace, this.GetResultVariableType(mulExp1Hash_IPlace, unExpPlace));
                     var mulExp1Hash1_ICode = mulExp1Hash_ICode + unExpCode + CreateCode("/", mulExp1Hash1_IPlace, mulExp1Hash_IPlace, unExpPlace);
                     if (Multiplicative_expression1Hash(mulExp1Hash1_IPlace, mulExp1Hash1_ICode,
                         out string mulExp1HashPlace, out string mulExp1HashCode))
@@ -1165,6 +1195,7 @@ namespace DotNetCCompiler
                 if (Unary_expression(out string unExpPlace, out string unExpCode))
                 {
                     var mulExp1Hash1_IPlace = CreateTempVar();
+                    _symbolContexts.Peek().RuntimeVariables.Add(mulExp1Hash1_IPlace, this.GetResultVariableType(mulExp1Hash_IPlace, unExpPlace));
                     var mulExp1Hash1_ICode = mulExp1Hash_ICode + unExpCode + CreateCode("/", mulExp1Hash1_IPlace, mulExp1Hash_IPlace, unExpPlace);
                     if (Multiplicative_expression1Hash(mulExp1Hash1_IPlace, mulExp1Hash1_ICode,
                         out string mulExp1HashPlace, out string mulExp1HashCode))
@@ -1185,6 +1216,11 @@ namespace DotNetCCompiler
             }
         }
 
+        private string GetResultVariableType(params string[] args)
+        {
+            return args.Any(arg => _symbolContexts.Peek()[arg].VarType == "float") ? "float" : "int";
+        }
+
         //Unary_expression -> Unary_operator Unary_expression | Postfix_expression 
         bool Unary_expression(out string unExpPlace, out string unExpCode)
         {
@@ -1195,6 +1231,7 @@ namespace DotNetCCompiler
                 if (Unary_expression(out unExpPlace, out string unExpCode1))
                 {
                     var newUnaryPlace = CreateTempVar();
+                    _symbolContexts.Peek().RuntimeVariables.Add(newUnaryPlace, this.GetResultVariableType(unExpPlace));
                     switch (_unToken)
                     {
                         case eToken.PLUS:
@@ -1280,6 +1317,7 @@ namespace DotNetCCompiler
             if (Postfix_operator(out string postFixOperator))
             {
                 postFixExp1Hash_SPlace = CreateTempVar();
+                _symbolContexts.Peek().RuntimeVariables.Add(postFixExp1Hash_SPlace, this.GetResultVariableType(postFixExp1_IPlace));
                 postFixExp1Hash_SCode = $"{postFixExp1_ICode}{postFixExp1Hash_SPlace}={postFixExp1_IPlace}\n" +
                                         CreateCode(postFixOperator, postFixExp1_IPlace, postFixExp1_IPlace, "1");
                 return true;
@@ -1321,6 +1359,8 @@ namespace DotNetCCompiler
             {// identifier
                 primExpPlace = _currentToken.Label;
                 primExpCode = "";
+                if (!_symbolContexts.Peek().Contains(primExpPlace))
+                    throw new Exception($"Usando variável não declarada {primExpPlace}");
                 GetToken();
                 return true;
             }
@@ -1355,6 +1395,7 @@ namespace DotNetCCompiler
             {// int_constant
                 constantPlace = CreateTempVar();
                 constantCod = CreateCode("=", constantPlace, _currentToken.Label);
+                _symbolContexts.Peek().RuntimeVariables.Add(constantPlace, "int");
                 GetToken();
                 return true;
             }
@@ -1362,6 +1403,7 @@ namespace DotNetCCompiler
             {// float_constant
                 constantPlace = CreateTempVar();
                 constantCod = CreateCode("=", constantPlace, _currentToken.Label);
+                _symbolContexts.Peek().RuntimeVariables.Add(constantPlace, "float");
                 GetToken();
                 return true;
             }
