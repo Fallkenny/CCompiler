@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 
@@ -36,16 +37,26 @@ namespace DotNetCCompiler
 
         public bool Compile(out string _3adressCode)
         {
+            SymbolTable.Reset();
             _3adressCode = "";
-            try
+            GetToken();
+            if (Debugger.IsAttached)
             {
-                GetToken();
                 return Program(out _3adressCode);
             }
-            catch (Exception e)
+            else
             {
-                Console.WriteLine($"{e.Message}\nToken atual= {_currentToken.Label}({_token.ToString()})\nLinha:{_currentToken.Line}\n{_currentToken.Column}");
-                return false;
+                try
+                {
+                    return Program(out _3adressCode);
+                }
+                catch (Exception e)
+                {
+                    Console.ForegroundColor = ConsoleColor.Red;
+                    Console.WriteLine($"{e.Message}\nToken atual= {_currentToken.Label}({_token.ToString()})----->   |||Linha:{_currentToken.Line} ||| Coluna:{_currentToken.Column}|||");
+                    return false;
+                }
+
             }
         }
 
@@ -73,7 +84,10 @@ namespace DotNetCCompiler
                     progCode = mainCode;
                     return true;
                 }
-                else { return false; }
+                else
+                {
+                    throw new Exception("Esperava final de arquivo");
+                }
             }
             else { return false; }
         }
@@ -85,7 +99,7 @@ namespace DotNetCCompiler
             if (_token == eToken.INT)
             {// int
                 GetToken();
-                if (_token == eToken.IDENTIFIER)
+                if (_token == eToken.IDENTIFIER && _currentToken.Label == "main")
                 {// identifier
                     GetToken();
                     if (_token == eToken.OPEN_PARENTHESIS)
@@ -99,13 +113,15 @@ namespace DotNetCCompiler
                                 mainFuncCode = cpStmtCode;
                                 return true;
                             }
-                            else { return false; }
+                            else
+                            { throw new Exception("Esperava corpo da função entre chaves {...}"); }
                         }
-                        else { return false; }
+                        else
+                        { throw new Exception("Esperava fecha parênteses"); }
                     }
-                    else { return false; }
+                    else { throw new Exception("Esperava abre parênteses"); }
                 }
-                else { return false; }
+                else { throw new Exception("O programa deve consistir em uma função \"main\""); }
             }
             else { return false; }
         }
@@ -147,7 +163,10 @@ namespace DotNetCCompiler
                     GetToken();
                     return true;
                 }
-                else { return false; }
+                else
+                {
+                    throw new Exception("Esperava ponto e vírgula");
+                }
             }
             else if (_token == eToken.BREAK)
             {// break
@@ -160,7 +179,10 @@ namespace DotNetCCompiler
                     GetToken();
                     return true;
                 }
-                else { return false; }
+                else
+                {
+                    throw new Exception("Esperava ponto e vírgula");
+                }
             }
             else { return false; }
         }
@@ -182,7 +204,7 @@ namespace DotNetCCompiler
                     }
                     else { return false; }
                 }
-                else { return false; }
+                else { throw new Exception("Esperava abre parênteses"); }
             }
             else { return false; }
         }
@@ -220,7 +242,7 @@ namespace DotNetCCompiler
                         return false;
                     }
                 }
-                else { return false; }
+                else { throw new Exception("Esperava expressão"); }
             }
             else if (Declaration(out string declCode))
             {
@@ -248,9 +270,9 @@ namespace DotNetCCompiler
                         return false;
                     }
                 }
-                else { return false; }
+                else { throw new Exception("Esperava expressão"); }
             }
-            else { return false; }
+            else { throw new Exception("Esperava expressão ou declaração"); }
         }
 
         //For_statement3Linha -> ) Statement | Expression ) Statement 
@@ -265,7 +287,7 @@ namespace DotNetCCompiler
                     forStmt3LCode = stmtCode;
                     return true;
                 }
-                else { return false; }
+                else { throw new Exception("Esperava corpo do comando for"); }
             }
             else if (Expression(out string expPlace, out string expCode))
             {
@@ -277,9 +299,9 @@ namespace DotNetCCompiler
                         forStmt3LCode = $"{expCode}{stmtCode}";
                         return true;
                     }
-                    else { return false; }
+                    else { throw new Exception("Esperava corpo do comando for"); }
                 }
-                else { return false; }
+                else { throw new Exception("Esperava fecha parênteses"); }
             }
             else { return false; }
         }
@@ -296,7 +318,7 @@ namespace DotNetCCompiler
                     forStmt1LCode = stmtCode;
                     return true;
                 }
-                else { return false; }
+                else { throw new Exception("Esperava corpo do comando for"); }
             }
             else if (Expression(out string expPlace, out string expCode))
             {
@@ -308,9 +330,9 @@ namespace DotNetCCompiler
                         forStmt1LCode = $"{expCode}{stmtCode}";
                         return true;
                     }
-                    else { return false; }
+                    else { throw new Exception("Esperava corpo do comando for"); }
                 }
-                else { return false; }
+                else { throw new Exception("Esperava fecha parênteses"); }
             }
             else { return false; }
         }
@@ -337,11 +359,11 @@ namespace DotNetCCompiler
                             {
                                 if (_token == eToken.CLOSE_PARENTHESIS)
                                 {// )
+                                    _breakLabelStack.Push(lblEnd);
+                                    _continueLabelStack.Push(lblWhiletest);
                                     GetToken();
                                     if (_token == eToken.SEMICOLON)
                                     {// ;
-                                        _breakLabelStack.Push(lblEnd);
-                                        _continueLabelStack.Push(lblWhiletest);
                                         doWhileCode = $"{lblDo}:\n" +
                                                       $"{stmtCode}" +
                                                       $"{lblWhiletest}:\n" +
@@ -353,17 +375,22 @@ namespace DotNetCCompiler
                                         GetToken();
                                         return true;
                                     }
-                                    else { return false; }
+                                    else
+                                    {
+                                        _breakLabelStack.Pop();
+                                        _continueLabelStack.Pop();
+                                        throw new Exception("Esperava ponto e vírgula");
+                                    }
                                 }
-                                else { return false; }
+                                else { throw new Exception("Esperava fecha parênteses"); }
                             }
-                            else { return false; }
+                            else { throw new Exception("Esperava expressão condição para while"); }
                         }
-                        else { return false; }
+                        else { throw new Exception("Esperava abre parênteses"); }
                     }
-                    else { return false; }
+                    else { throw new Exception("Esperava while( condição )"); }
                 }
-                else { return false; }
+                else { throw new Exception("Esperava corpo do comando do"); }
             }
             else { return false; }
         }
@@ -385,10 +412,11 @@ namespace DotNetCCompiler
                         if (_token == eToken.CLOSE_PARENTHESIS)
                         {// )
                             GetToken();
+
+                            _breakLabelStack.Push(lblEnd);
+                            _continueLabelStack.Push(lblWhile);
                             if (Statement(out string stmtCode))
                             {
-                                _breakLabelStack.Push(lblEnd);
-                                _continueLabelStack.Push(lblWhile);
                                 whileCode = $"{lblWhile}:\n" +
                                             $"{expCode}" +
                                             $"if {expPlace} == 0 goto {lblEnd}\n" +
@@ -399,13 +427,18 @@ namespace DotNetCCompiler
                                 _continueLabelStack.Pop();
                                 return true;
                             }
-                            else { return false; }
+                            else
+                            {
+                                _breakLabelStack.Pop();
+                                _continueLabelStack.Pop();
+                                return false;
+                            }
                         }
-                        else { return false; }
+                        else { throw new Exception("Esperava fecha parênteses"); }
                     }
-                    else { return false; }
+                    else { throw new Exception("Esperava expressão"); }
                 }
-                else { return false; }
+                else { throw new Exception("Esperava abre parênteses"); }
             }
             else { return false; }
         }
@@ -442,13 +475,13 @@ namespace DotNetCCompiler
                                 }
                                 else { return false; }
                             }
-                            else { return false; }
+                            else { throw new Exception("Esperava corpo do if"); }
                         }
-                        else { return false; }
+                        else { throw new Exception("Esperava fecha parênteses"); }
                     }
-                    else { return false; }
+                    else { throw new Exception("Esperava condição para o if"); }
                 }
-                else { return false; }
+                else { throw new Exception("Esperava abre parênteses"); }
             }
             else { return false; }
         }
@@ -465,7 +498,7 @@ namespace DotNetCCompiler
                     ifStmt1Code = stmtCode;
                     return true;
                 }
-                else { return false; }
+                else { throw new Exception("Esperava corpo do else"); }
             }
             else { return true; }
         }
@@ -484,9 +517,9 @@ namespace DotNetCCompiler
                         GetToken();
                         return true;
                     }
-                    else { return false; }
+                    else { throw new Exception("Esperava ponto e vírgula"); }
                 }
-                else { return false; }
+                else { throw new Exception("Esperava inicializadores"); }
             }
             else { return false; }
         }
@@ -539,7 +572,7 @@ namespace DotNetCCompiler
                     }
                     else { return false; }
                 }
-                else { return false; }
+                else { throw new Exception("Esperava inicializador após a vírgula"); }
             }
             else { return true; }
         }
@@ -578,7 +611,7 @@ namespace DotNetCCompiler
                     initDecl1LCode = $"{assExpCode}{initDecl1LPlace} = {assExpPlace}\n";
                     return true;
                 }
-                else { return false; }
+                else { throw new Exception("Esperava valor/expressão para a atribuição"); }
             }
             else { return true; }
         }
@@ -659,7 +692,10 @@ namespace DotNetCCompiler
                     GetToken();
                     return true;
                 }
-                else { return false; }
+                else
+                {
+                    throw new Exception("Esperava fecha chaves");
+                }
             }
             else { return false; }
         }
@@ -746,10 +782,12 @@ namespace DotNetCCompiler
                 if (Assignment_expression(out string assExpPlace, out string assExpCode))
                 {
                     assExp1Hash_SPlace = assExp1Hash1_IPlace;
+                    _symbolContexts.Peek()[assExp1Hash_SPlace].Initialized = true;
+                    GetResultVariableType(assExpPlace);
                     assExp1Hash_SCode = $"{assExp1Hash1_ICode}{assExpCode}{assExp1Hash1_IPlace}{assOperator}{assExpPlace}\n";
                     return true;
                 }
-                else { return false; }
+                else { throw new Exception("Esperava valor/expressão para a atribuição"); }
             }
             else
             {
@@ -827,7 +865,7 @@ namespace DotNetCCompiler
                     }
                     else { return false; }
                 }
-                else { return false; }
+                else { throw new Exception("Esperava valor/ expressão para o lado direito da expressão OR"); }
             }
             else
             {
@@ -885,7 +923,7 @@ namespace DotNetCCompiler
                     }
                     else { return false; }
                 }
-                else { return false; }
+                else { throw new Exception("Esperava valor/expressão para a expressão AND"); }
             }
             else
             {
@@ -942,7 +980,7 @@ namespace DotNetCCompiler
                     }
                     else { return false; }
                 }
-                else { return false; }
+                else { throw new Exception($"Esperava expressão após o operador {eqOperator}"); }
             }
             else
             {
@@ -1014,7 +1052,7 @@ namespace DotNetCCompiler
                     }
                     else { return false; }
                 }
-                else { return false; }
+                else { throw new Exception($"Esperava expressão após o operador relacional {relOperator}"); }
             }
             else
             {
@@ -1091,7 +1129,7 @@ namespace DotNetCCompiler
                     }
                     else { return false; }
                 }
-                else { return false; }
+                else { throw new Exception("Esperava expressão após o operador soma"); }
             }
             else if (_token == eToken.MINUS)
             {// -
@@ -1111,7 +1149,7 @@ namespace DotNetCCompiler
                     }
                     else { return false; }
                 }
-                else { return false; }
+                else { throw new Exception("Esperava expressão após o operador subtração"); }
             }
             else
             {
@@ -1168,7 +1206,7 @@ namespace DotNetCCompiler
                     }
                     else { return false; }
                 }
-                else { return false; }
+                else { throw new Exception("Esperava expressão após o operador multiplicação"); }
             }
             else if (_token == eToken.DIVISION)
             {// /
@@ -1187,7 +1225,7 @@ namespace DotNetCCompiler
                     }
                     else { return false; }
                 }
-                else { return false; }
+                else { throw new Exception("Esperava expressão após o operador divisão"); }
             }
             else if (_token == eToken.MODULE)
             {// %
@@ -1206,7 +1244,7 @@ namespace DotNetCCompiler
                     }
                     else { return false; }
                 }
-                else { return false; }
+                else { throw new Exception("Esperava expressão após o operador módulo"); }
             }
             else
             {
@@ -1218,6 +1256,9 @@ namespace DotNetCCompiler
 
         private string GetResultVariableType(params string[] args)
         {
+            var uninitializedVar = args.FirstOrDefault(arg => !_symbolContexts.Peek()[arg].Initialized);
+            if (!(uninitializedVar is null) && !_symbolContexts.Peek().RuntimeVariables.Contains(uninitializedVar))
+                throw new Exception($"Usando variável não inicializada {uninitializedVar}");
             return args.Any(arg => _symbolContexts.Peek()[arg].VarType == "float") ? "float" : "int";
         }
 
@@ -1226,6 +1267,7 @@ namespace DotNetCCompiler
         {
             unExpPlace = "";
             unExpCode = "";
+            var operatorString = _currentToken.Label;
             if (Unary_operator(out eToken _unToken))
             {
                 if (Unary_expression(out unExpPlace, out string unExpCode1))
@@ -1258,7 +1300,7 @@ namespace DotNetCCompiler
                         unExpPlace = newUnaryPlace;
                     return true;
                 }
-                else { return false; }
+                else { throw new Exception($"Esperava expressão após o operador unário {operatorString}"); }
             }
             else if (Postfix_expression(out string postFixExpPlace, out string postFixExpCode)) // trocar para Postfix_expression
             {
@@ -1378,9 +1420,12 @@ namespace DotNetCCompiler
                         GetToken();
                         return true;
                     }
-                    else { return false; }
+                    else
+                    {
+                        throw new Exception("Esperava fecha parênteses");
+                    }
                 }
-                else { return false; }
+                else { throw new Exception("Esperava expressão entre parênteses"); }
             }
             else { return false; }
         }
@@ -1421,7 +1466,6 @@ namespace DotNetCCompiler
         }
 
         //Expression_statement -> ; | Expression ; 
-
         bool Expression_statement(out string expStmtCode) => Expression_statement(out string _, out expStmtCode);
         bool Expression_statement(out string expStmtPlace, out string expStmtCode)
         {
@@ -1441,7 +1485,7 @@ namespace DotNetCCompiler
                     GetToken();
                     return true;
                 }
-                else { return false; }
+                else { throw new Exception("Esperava ponto e vírgula"); }
             }
             else { return false; }
         }
@@ -1483,11 +1527,13 @@ namespace DotNetCCompiler
                     if (Expression1Hash(exp1Hash1_IPlace, exp1Hash1_ICode,
                         out string exp1Hash1_SPlace, out string exp1Hash1_SCode))
                     {
+                        exp1Hash_SPlace = exp1Hash1_SPlace;
+                        exp1Hash_SCode = exp1Hash1_SCode;
                         return true;
                     }
                     else { return false; }
                 }
-                else { return false; }
+                else { throw new Exception("Esperava expressão após a vírgula"); }
             }
             else
             {

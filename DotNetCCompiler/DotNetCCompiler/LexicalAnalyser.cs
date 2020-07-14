@@ -49,7 +49,8 @@ namespace DotNetCCompiler
         {
             InStreamReader = new StreamReader(fileStream);
 
-            string path = Path.Combine(Path.GetDirectoryName((fileStream as FileStream).Name), "Saida.lex");
+            string path = Path.Combine(Path.GetDirectoryName((fileStream as FileStream).Name), 
+                $"tokens_{Path.GetFileNameWithoutExtension((fileStream as FileStream).Name)}.lex");
 
             OutStreamWriter = File.CreateText(path);
         }
@@ -68,8 +69,7 @@ namespace DotNetCCompiler
             _stringLine += '\n';
             _currentLine++;
         }
-
-
+        
         private void GetChar()
         {
             if (string.IsNullOrEmpty(_stringLine) || _currentColumn >= _stringLine.Length)
@@ -449,8 +449,7 @@ namespace DotNetCCompiler
         private void SkipLine() => _currentColumn = _stringLine.Length;
 
         private bool IsLetter() => _char >= 'a' && _char <= 'z' || _char >= 'A' && _char <= 'Z';
-
-
+        
         private void BackSpace() => _lexical = _lexical.Remove(_lexical.Length - 1);
     }
 }

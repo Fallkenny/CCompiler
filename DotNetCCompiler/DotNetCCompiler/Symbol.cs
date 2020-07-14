@@ -9,12 +9,5 @@ namespace DotNetCCompiler
         public string Name { get; set; }
         public string VarType { get; set; }
         public bool Initialized { get; set; }
-
-        public bool IsCompatible(Symbol anotherSymbol)
-        {
-            if (this.VarType == "int" && anotherSymbol.VarType == "float")
-                return false;
-            return true;
-        }
     }
 }

@@ -20,7 +20,9 @@ namespace DotNetCCompiler
             }
         }
 
-        public static SymbolTable TemporaryVariables { get; set; } = new SymbolTable();
+        public static void Reset() => TemporaryVariables = new SymbolTable();
+
+        public static SymbolTable TemporaryVariables { get; set; }
 
         public SymbolTable RuntimeVariables => TemporaryVariables;
 

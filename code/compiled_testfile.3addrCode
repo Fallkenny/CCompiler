@@ -1,0 +1,126 @@
+T000=2
+a = T000
+T001=3
+b = T001
+c = a
+T002=6.66
+devil = T002
+T003=a>b
+if T003 == 0 goto LB001
+c = b
+ goto LB000
+LB001:
+T004=b>=a
+if T004 == 0 goto LB010
+T005=c
+c=c+1
+a=T005
+
+c=c +1
+b=c
+ goto LB009
+LB010:
+LB009:
+LB000:
+T007=a+b
+T008=T007+c
+T009=devil<T008
+if T009 == 0 goto LB019
+T010=6
+T011=100
+T012=T010*T011
+a=T012
+T013=6
+T014=10
+T015=T013*T014
+b=T015
+T016=6
+T017=1
+T018=T016*T017
+c=T018
+ goto LB018
+LB019:
+LB018:
+LB029:
+T019=a+b
+T020=T019+c
+T021=devil!=T020
+if T021 == 0 goto LB030
+T022=10
+devil*=T022
+goto LB029
+LB030:
+T023=1
+anotherDevil = T023
+T024=0
+i=T024
+LB045:
+T025=2
+T026=i<=T025
+if T026 == 0 goto LB046
+T027=i
+i=i+1
+T028=1
+anotherDevil=T028
+LB051:
+T029=anotherDevil
+anotherDevil=anotherDevil+1
+LB052:
+T030=6
+T031=anotherDevil<T030
+if T031 == 1 goto LB051
+LB053:hellMultiplier = i
+LB063:
+T032=hellMultiplier
+hellMultiplier=hellMultiplier-1
+if T032 == 0 goto LB064
+T033=10
+T034=anotherDevil*T033
+anotherDevil=T034
+goto LB063
+LB064:
+goto LB045
+LB046:
+LB081:
+T035=0
+T036=anotherDevil!=T035
+T037=0
+T038=devil!=T037
+T039=T036&&T038
+if T039 == 0 goto LB082
+T040=0
+T041=anotherDevil!=T040
+if T041 == 0 goto LB084
+T042=anotherDevil
+anotherDevil=anotherDevil-1
+goto LB081
+ goto LB083
+LB084:
+LB083:
+T043=0
+T044=devil!=T043
+if T044 == 0 goto LB100
+T045=devil
+devil=devil-1
+goto LB081
+ goto LB099
+LB100:
+LB099:
+goto LB081
+LB082:
+T046=0
+theEvilWasDefeated = T046
+T047=anotherDevil+devil
+T048=0
+T049=T047==T048
+if T049 == 0 goto LB123
+T050=1
+theEvilWasDefeated=T050
+ goto LB122
+LB123:
+LB122:
+LB133:
+if theEvilWasDefeated == 0 goto LB134
+goto LB134
+goto LB133
+LB134:

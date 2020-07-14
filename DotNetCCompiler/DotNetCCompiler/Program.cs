@@ -1,100 +1,74 @@
 ﻿using System;
+using System.Diagnostics;
 using System.IO;
+using System.Linq;
+using System.Threading;
 
 namespace DotNetCCompiler
 {
-    class Program
+    public class Program
     {
-        static void Main(string[] args)
+        public static void Main(string[] args)
         {
-            Console.WriteLine("Hello World!");
-            //test();
-            var testFile = @"C:\GitHub\CCompiler\code\testfile.c";
+            Console.Clear();
+            DrawText();
+            Console.ForegroundColor = ConsoleColor.Gray;
+            string testFile = (!args.Any() && Debugger.IsAttached) 
+                              ? @"C:\GitHub\CCompiler\code\testfile.c"
+                              :args[0];
+
             Console.WriteLine($"Iniciando análise léxica: {testFile}");
+            Console.Write("...\n");
             var fileStream = File.OpenRead(testFile);
             var lexical = new LexicalAnalyzer(fileStream);
             lexical.Analyze();
             Console.WriteLine($"Verifique o arquivo de saida gerado em: {(LexicalAnalyzer.OutStreamWriter.BaseStream as FileStream).Name}");
-
+            Console.Write("...\n");
             Console.WriteLine($"Iniciando análise sintática + semântica + compilação: {testFile}");
+            Console.Write("...\n");
             var syntactic = new Syntactic_SemmanticAnalyser(lexical.TokenResultList);
-            if (syntactic.Compile(out string _3adressCode)) 
+            if (syntactic.Compile(out string _3adressCode))
             {
-                var copiledPath = Path.Combine(Path.GetDirectoryName(testFile),$"compiled_{Path.GetFileName(testFile)}");
+                var copiledPath = Path.Combine(Path.GetDirectoryName(testFile), $"compiled_{Path.GetFileNameWithoutExtension(testFile)}.3addrCode");
                 var file = File.CreateText(copiledPath);
                 file.Write(_3adressCode);
+                file.Close();
+                Console.ForegroundColor = ConsoleColor.Green;
+                Console.WriteLine($"Verifique o arquivo de saida gerado em: {copiledPath}");
+                Console.Write(".\n.\n.\n");
+                Console.ForegroundColor = ConsoleColor.Red;
+                Console.Write("Para selecionar outro arquivo, use o diálogo principal");
+                Console.Write("...\n");
+                
             }
         }
 
-        static void test()
+        private static void DrawText()
         {
-            int a = 2;
-            int b = 3;
-            int c = a;
-            float devil = 6.66f;
-            if (a > b)
-            {
-                c = b;
-            }
-            else if (b >= a)
-            {
-                a = c++;
-                b = ++c;
-            }
-            if (devil < a + b + c)
-            {
-                a = 6 * 100;
-                b = 6 * 10;
-                c = 6 * 1;
-            }
-
-            while (devil != a + b + c)
-            {
-                devil *= 10;
-            }
-
-            int i;
-            int anotherDevil = 1;
-            for (i = 0; i <= 2; i++)
-            {
-                anotherDevil = 1;
-                do
-                {
-                    anotherDevil++;
-                }
-                while (anotherDevil < 6);
-                int hellMultiplier = i;
-                while (hellMultiplier-- != 0)
-                {
-                    anotherDevil = anotherDevil * 10;
-                }
-            }
-
-            while (anotherDevil != 0 || devil != 0)
-            {
-                if (anotherDevil != 0)
-                {
-                    anotherDevil--;
-                    continue;
-                }
-
-                if (devil != 0)
-                {
-                    devil--;
-                    continue;
-                }
-            }
-            int theEvilWasDefeated = 0;
-
-            if (anotherDevil + devil == 0)
-            {
-                theEvilWasDefeated = 1;
-            }
-            while (theEvilWasDefeated != 0)
-            {
-                break;
-            }
-
+            Console.ForegroundColor = ConsoleColor.DarkBlue;
+            Console.WriteLine("=======================================================================================================");
+            Console.WriteLine("=======================================================================================================");
+            Console.WriteLine("=======================================================================================================");
+            Console.ForegroundColor = ConsoleColor.DarkGreen;
+            Console.WriteLine("░░░███╗░░██╗███████╗████████╗  ░█████╗░  ░█████╗░░█████╗░███╗░░░███╗██████╗░██╗██╗░░░░░███████╗██████╗░");
+            Console.WriteLine("░░░████╗░██║██╔════╝╚══██╔══╝  ██╔══██╗  ██╔══██╗██╔══██╗████╗░████║██╔══██╗██║██║░░░░░██╔════╝██╔══██╗");
+            Console.WriteLine("░░░██╔██╗██║█████╗░░░░░██║░░░  ██║░░╚═╝  ██║░░╚═╝██║░░██║██╔████╔██║██████╔╝██║██║░░░░░█████╗░░██████╔╝");
+            Console.WriteLine("░░░██║╚████║██╔══╝░░░░░██║░░░  ██║░░██╗  ██║░░██╗██║░░██║██║╚██╔╝██║██╔═══╝░██║██║░░░░░██╔══╝░░██╔══██╗");
+            Console.WriteLine("██╗██║░╚███║███████╗░░░██║░░░  ╚█████╔╝  ╚█████╔╝╚█████╔╝██║░╚═╝░██║██║░░░░░██║███████╗███████╗██║░░██║");
+            Console.WriteLine("╚═╝╚═╝░░╚══╝╚══════╝░░░╚═╝░░░  ░╚════╝░  ░╚════╝░░╚════╝░╚═╝░░░░░╚═╝╚═╝░░░░░╚═╝╚══════╝╚══════╝╚═╝░░╚═╝");
+            Console.ForegroundColor = ConsoleColor.DarkBlue;
+            Console.WriteLine("=======================================================================================================");
+            Console.WriteLine("=======================================================================================================");
+            Console.WriteLine("=======================================================================================================");
+            Console.ForegroundColor = ConsoleColor.DarkGray;
+            Console.WriteLine("=======================================================================================================");
+            Console.WriteLine("=======================================================================================================");
+            Console.WriteLine("=============█▀▀ █▀▀ █░░ █ █▀█ █▀▀   █▀▀ █ █▀ █▀▀ █░█ █▀▀ █▀█   █▀▄ ▄▀█   █▀ █ █░░ █░█ ▄▀█=============");
+            Console.WriteLine("=============█▀░ ██▄ █▄▄ █ █▀▀ ██▄   █▀░ █ ▄█ █▄▄ █▀█ ██▄ █▀▄   █▄▀ █▀█   ▄█ █ █▄▄ ▀▄▀ █▀█=============");
+            Console.WriteLine("=======================================================================================================");
+            Console.WriteLine("=======================================================================================================");
+            Console.Write(".\n...\n");
+          
         }
     }
 }
