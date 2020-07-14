@@ -1234,7 +1234,7 @@ namespace DotNetCCompiler
                 {
                     var mulExp1Hash1_IPlace = CreateTempVar();
                     _symbolContexts.Peek().RuntimeVariables.Add(mulExp1Hash1_IPlace, this.GetResultVariableType(mulExp1Hash_IPlace, unExpPlace));
-                    var mulExp1Hash1_ICode = mulExp1Hash_ICode + unExpCode + CreateCode("/", mulExp1Hash1_IPlace, mulExp1Hash_IPlace, unExpPlace);
+                    var mulExp1Hash1_ICode = mulExp1Hash_ICode + unExpCode + CreateCode("%", mulExp1Hash1_IPlace, mulExp1Hash_IPlace, unExpPlace);
                     if (Multiplicative_expression1Hash(mulExp1Hash1_IPlace, mulExp1Hash1_ICode,
                         out string mulExp1HashPlace, out string mulExp1HashCode))
                     {
