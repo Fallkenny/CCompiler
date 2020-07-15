@@ -215,20 +215,24 @@ namespace DotNetCCompiler
             forStmt2LCode = "";
             var lblForIterationStart = CreateLabel();
             var lblForEnd = CreateLabel();
+            var lblForInc = CreateLabel();
             if (Expression_statement(out string expStmt1Code))
             {
                 if (Expression_statement(out string expStmt2Place, out string expStmt2Code))
                 {
-                    _continueLabelStack.Push(lblForIterationStart);
+                    _continueLabelStack.Push(lblForInc);
                     _breakLabelStack.Push(lblForEnd);
-                    if (For_statement1Linha(out string forStmt1LCode))
+                    if (For_statement1Linha(out string forStmt1LCode, out string forStmt1LIncCode))
                     {
                         forStmt2LCode = $"{expStmt1Code}" +
+                                        $"goto {lblForIterationStart}\n"+
+                                        $"{lblForInc}:\n" +
+                                        $"{forStmt1LIncCode}"+
                                         $"{lblForIterationStart}:\n" +
                                         $"{expStmt2Code}" +
                                         $"if {expStmt2Place} == 0 goto {lblForEnd}\n" +
                                         $"{forStmt1LCode}" +
-                                        $"goto {lblForIterationStart}\n" +
+                                        $"goto {lblForInc}\n" +
                                         $"{lblForEnd}:\n";
                         _breakLabelStack.Pop();
                         _continueLabelStack.Pop();
@@ -248,16 +252,19 @@ namespace DotNetCCompiler
             {
                 if (Expression_statement(out string expStmtPlace, out string expStmtCode))
                 {
-                    _continueLabelStack.Push(lblForIterationStart);
+                    _continueLabelStack.Push(lblForInc);
                     _breakLabelStack.Push(lblForEnd);
-                    if (For_statement3Linha(out string forStmt3LCode))
+                    if (For_statement3Linha(out string forStmt3LCode, out string forStmt3LIncCode))
                     {
                         forStmt2LCode = $"{declCode}" +
+                                        $"goto {lblForIterationStart}\n" +
+                                        $"{lblForInc}:\n" +
+                                        $"{forStmt3LIncCode}" +
                                         $"{lblForIterationStart}:\n" +
                                         $"{expStmtCode}" +
                                         $"if {expStmtPlace} == 0 goto {lblForEnd}\n" +
                                         $"{forStmt3LCode}" +
-                                        $"goto {lblForIterationStart}\n" +
+                                        $"goto {lblForInc}\n" +
                                         $"{lblForEnd}:\n";
                         _breakLabelStack.Pop();
                         _continueLabelStack.Pop();
@@ -276,9 +283,10 @@ namespace DotNetCCompiler
         }
 
         //For_statement3Linha -> ) Statement | Expression ) Statement 
-        bool For_statement3Linha(out string forStmt3LCode)
+        bool For_statement3Linha(out string forStmt3LCode, out string forStmt3LIncCode)
         {
             forStmt3LCode = "";
+            forStmt3LIncCode = "";
             if (_token == eToken.CLOSE_PARENTHESIS)
             {// )
                 GetToken();
@@ -296,7 +304,8 @@ namespace DotNetCCompiler
                     GetToken();
                     if (Statement(out string stmtCode))
                     {
-                        forStmt3LCode = $"{expCode}{stmtCode}";
+                        forStmt3LCode = stmtCode;
+                        forStmt3LIncCode = expCode;
                         return true;
                     }
                     else { throw new Exception("Esperava corpo do comando for"); }
@@ -307,9 +316,10 @@ namespace DotNetCCompiler
         }
 
         //For_statement1Linha -> ) Statement | Expression ) Statement 
-        bool For_statement1Linha(out string forStmt1LCode)
+        bool For_statement1Linha(out string forStmt1LCode, out string forStmt1LIncCode)
         {
             forStmt1LCode = "";
+            forStmt1LIncCode = "";
             if (_token == eToken.CLOSE_PARENTHESIS)
             {// )
                 GetToken();
@@ -327,7 +337,8 @@ namespace DotNetCCompiler
                     GetToken();
                     if (Statement(out string stmtCode))
                     {
-                        forStmt1LCode = $"{expCode}{stmtCode}";
+                        forStmt1LCode = stmtCode;
+                        forStmt1LIncCode = expCode;
                         return true;
                     }
                     else { throw new Exception("Esperava corpo do comando for"); }
